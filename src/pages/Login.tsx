@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { api } from '../services/api'; // 방금 만든 api 인스턴스 가져오기
 
 const Login = () => {
     const [userId, setUserId] = useState('');
@@ -9,14 +10,29 @@ const Login = () => {
     const login = useAuthStore((state) => state.login);
     const navigate = useNavigate();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // 가짜(Mock) 로그인: 아이디와 비밀번호가 있으면 성공으로 간주
-        if (userId && password) {
-            login(userId); // Zustand에 유저명 저장
-            navigate('/'); // 메인 화면으로 리다이렉트
-        } else {
-            alert('아이디와 비밀번호를 입력해주세요.');
+
+        if (!userId || !password) {
+            alert('아이디와 비밀번호를 모두 입력해주세요.');
+            return;
+        }
+
+        try {
+            // 플라스크 백엔드로 진짜 로그인 API 요청 보내기!
+            const response = await api.post('/api/login', {
+                userId,
+                password
+            });
+
+            // 파이썬 서버에서 내려준 응답(status: success) 확인
+            if (response.data.status === 'success') {
+                login(response.data.username); // Zustand에 저장
+                navigate('/'); // 메인 화면으로 리다이렉트
+            }
+        } catch (error) {
+            console.error('로그인 에러:', error);
+            alert('로그인에 실패했습니다. (서버와 연결되지 않거나 계정 정보가 틀렸습니다.)');
         }
     };
 
