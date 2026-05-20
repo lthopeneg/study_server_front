@@ -1,0 +1,74 @@
+name: Deploy to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main # main 브랜치에 코드가 push(또는 merge)될 때만 실행됩니다.
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 1. GitHub에서 이미지를 빌드하고 GHCR에 업로드하는 작업
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # GHCR에 이미지를 푸시하기 위한 권한
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # 깃허브에서 자동 발급하는 토큰 사용
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          labels: ${{ steps.meta.outputs.labels }}
+
+  # 2. 오라클 서버에 접속하여 이미지를 다운받고 실행하는 작업
+  deploy:
+    needs: build-and-push # 빌드 작업이 성공해야만 실행됨
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Oracle Cloud via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SS_HOST }}
+          username: ${{ secrets.SS_USERNAME }}
+          key: ${{ secrets.SS_KEY }}
+          script: |
+            # 1. 저장소 이름을 소문자로 강제 변환 (도커 이미지는 대문자를 허용하지 않음)
+            IMAGE_URL="ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):latest"
+            
+            # 2. GHCR 로그인 (서버 내부에서 프라이빗 이미지를 pull 받기 위함)
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # 3. 최신 이미지 다운로드
+            docker pull $IMAGE_URL
+            
+            # 4. 기존 컨테이너 중지 및 삭제
+            docker stop study-front-app || true
+            docker rm study-front-app || true
+            
+            # 5. 새 컨테이너 실행 (서버의 80포트를 컨테이너의 80포트로 연결)
+            docker run -d -p 80:80 --name study-front-app $IMAGE_URL
+            
+            # 6. 사용하지 않는 잉여 도커 이미지 및 캐시 청소 (서버 용량 확보)
+            docker image prune -f
