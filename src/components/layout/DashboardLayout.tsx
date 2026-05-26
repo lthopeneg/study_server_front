@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
+import logoImg from '../../assets/logo.png'
 
 const DashboardLayout = () => {
     const username = useAuthStore((state) => state.username);
@@ -14,10 +15,12 @@ const DashboardLayout = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'sans-serif' }}>
             {/* 1. 상단 네비게이션 바 (Top Navbar) */}
-            <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1e293b', color: 'white', padding: '1rem 2rem' }}>
-                <Link to="/" style={{ color: '#38bdf8', textDecoration: 'none', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                    Secure Study
-                </Link>
+            <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', color: '#334155', padding: '1rem 2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>    <Link to="/" style={{ color: '#38bdf8', textDecoration: 'none', fontSize: '1.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img
+                    src={logoImg}
+                    alt="SECURECODE SPACE Logo"
+                    style={{ height: '98px', width: 'auto', objectFit: 'contain' }}
+                /></Link>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                     <span style={{ fontSize: '0.9rem' }}>환영합니다, <strong>{username}</strong>님!</span>
