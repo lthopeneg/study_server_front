@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { api } from '../services/api'; // 방금 만든 api 인스턴스 가져오기
 
@@ -37,7 +37,7 @@ const Login = () => {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '100px', fontFamily: 'sans-serif' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '100px', fontFamily: 'sans-serif' }}>
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '300px' }}>
                 <h2 style={{ textAlign: 'center' }}>로그인</h2>
                 <input
@@ -58,6 +58,14 @@ const Login = () => {
                     로그인
                 </button>
             </form>
+
+            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                <span style={{ fontSize: '0.9rem', color: '#666' }}>아직 계정이 없으신가요? </span>
+                <Link to="/signup" style={{ fontSize: '0.9rem', color: '#007bff', textDecoration: 'none', fontWeight: 'bold' }}>
+                    회원가입 하기
+                </Link>
+            </div>
+
         </div>
     );
 };

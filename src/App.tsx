@@ -2,6 +2,7 @@ import React from 'react'; // <-- 1. 맨 윗줄에 추가
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import { useAuthStore } from './store/useAuthStore';
 // 2. JSX.Element 를 React.ReactNode 로 변경
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -17,6 +18,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route
           path="/"
           element={
