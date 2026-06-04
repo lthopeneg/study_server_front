@@ -27,7 +27,8 @@ const Login = () => {
             });
 
             if (response.data.status === 'success') {
-                login(response.data.username);
+                // 백엔드가 넘겨준 아이디와 만료 시각을 모두 Zustand Store에 넘겨줌!
+                login(response.data.username, response.data.expires_at);
                 navigate('/');
             }
         } catch (error) {
