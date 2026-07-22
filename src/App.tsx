@@ -15,6 +15,13 @@ import Practice from './pages/Dashboard/Practice';
 import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
 
+import NotesLayout from './pages/Dashboard/ResearchNotes/NotesLayout';
+import NotesDashboard from './pages/Dashboard/ResearchNotes/NotesDashboard';
+import ExperimentIDE from './pages/Dashboard/ResearchNotes/ExperimentIDE';
+import MetricsDashboard from './pages/Dashboard/ResearchNotes/MetricsDashboard';
+import ProblemBank from './pages/Dashboard/ResearchNotes/ProblemBank';
+import PromptList from './pages/Dashboard/ResearchNotes/PromptList';
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAuthStore((state) => state.username);
   if (!username) return <Navigate to="/login" replace />;
@@ -26,27 +33,21 @@ function App() {
   const login = useAuthStore((state) => state.login);
 
   useEffect(() => {
-    // [보안 핵심] 새로고침 시 즉시 백엔드에 요청하여 HttpOnly 쿠키 안에 유효한 JWT가 있는지 검사합니다.
     const verifyToken = async () => {
       try {
         const response = await api.get('/api/check-auth');
         if (response.data.status === 'success') {
-          // 백엔드가 토큰을 승인하고 새 30분 타이머를 주면 상태를 복구(자동 로그인)
           login(response.data.username, response.data.expires_at);
         }
-
       } catch (error) {
-        // 쿠키가 없거나 만료(조작)되었다면 해킹/만료로 간주하고 무시함
         console.log("세션 만료 또는 로그인되지 않음");
       } finally {
-        // 검사가 끝나면 앱을 렌더링하도록 허가
         setIsCheckingAuth(false);
       }
     };
     verifyToken();
   }, [login]);
 
-  // 서버로부터 쿠키 검증 결과를 기다리는 동안 잠깐 보여줄 화면 (깜빡임 방지용)
   if (isCheckingAuth) {
     return <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>보안 인증 확인 중...</div>;
   }
@@ -67,11 +68,36 @@ function App() {
           }
         >
           {/* <Outlet /> 자리에 쏙쏙 들어갈 하위 라우트들 (Nested Routes) */}
-          <Route index element={<DashboardHome />} /> {/* 기본 화면을 학습으로 넘김 */}
+          <Route index element={<DashboardHome />} /> 
           <Route path="learning" element={<Learning />} />
           <Route path="practice" element={<Practice />} />
           <Route path="news" element={<SecurityNews />} />
           <Route path="mypage" element={<MyPage />} />
+          
+          {/* 연구 노트 라우트 */}
+          <Route path="notes" element={<NotesLayout />}>
+            {/* 1. 대시보드 */}
+            <Route path="executive_summary" element={<NotesDashboard filePath="Reports/executive_summary.md" />} />
+            <Route path="metrics" element={<MetricsDashboard />} />
+            <Route path="evaluation_records" element={<NotesDashboard filePath="Reports/cumulative_evaluation_records.csv" />} />
+            
+            {/* 2. 연구 및 실험 */}
+            <Route path="timeline" element={<NotesDashboard filePath="Reports/weekly_artifact_index.md" />} />
+            <Route path="experiments" element={<ExperimentIDE />} />
+
+            {/* 3. 프롬프트 관리 */}
+            <Route path="prompt_list" element={<PromptList />} />
+            <Route path="versions" element={<NotesDashboard filePath="Prompts/history/prompt_version_history.md" />} />
+
+            {/* 4. 산출물 및 보고서 */}
+            <Route path="problem_bank" element={<ProblemBank />} />
+            <Route path="reviewer_scorecard" element={<NotesDashboard filePath="Evaluation/reviewer_scorecard.md" />} />
+            <Route path="architecture" element={<NotesDashboard filePath="Reports/system_architecture_diagram.md" />} />
+            <Route path="manifest" element={<NotesDashboard filePath="Reports/artifact_manifest.json" />} />
+
+            {/* 매칭되지 않는 주소는 요약 화면으로 */}
+            <Route path="*" element={<Navigate to="executive_summary" replace />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
