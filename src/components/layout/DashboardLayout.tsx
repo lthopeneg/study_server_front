@@ -70,7 +70,7 @@ const DashboardLayout = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'sans-serif' }}>
-            <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', color: '#334155', padding: '1rem 2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+            <nav style={{ position: 'sticky', top: 0, zIndex: 1000, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', color: '#334155', padding: '1rem 2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                 <Link to="/" style={{ color: '#38bdf8', textDecoration: 'none', fontSize: '1.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img src={logoImg} alt="SECURECODE SPACE Logo" style={{ height: '98px', width: 'auto', objectFit: 'contain' }} />
                 </Link>
@@ -100,7 +100,7 @@ const DashboardLayout = () => {
                 </div>
             </nav>
 
-            <main style={{ flex: 1, padding: '2rem', maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+            <main style={{ flex: 1, padding: '2rem', width: '100%', boxSizing: 'border-box' }}>
                 <Outlet />
             </main>
         </div>
