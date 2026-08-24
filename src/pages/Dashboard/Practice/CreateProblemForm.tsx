@@ -11,8 +11,6 @@ const CreateProblemForm = () => {
     const [majorTopic, setMajorTopic] = useState('');
     const [minorTopic, setMinorTopic] = useState('');
     const [difficulty, setDifficulty] = useState('beginner');
-    const [title, setTitle] = useState('');
-    const [scenario, setScenario] = useState('');
 
     const topicGroups = language === 'Python' ? pythonTopicGroups : commonTopicGroups;
     const minorTopics = useMemo(
@@ -119,29 +117,13 @@ const CreateProblemForm = () => {
             </section>
 
             {method === 'manual' ? (
-                <>
-                    <section className="problem-create-section problem-shared-fields">
-                        <div className="problem-create-stack">
-                            <label>
-                                <span>문제 제목</span>
-                                <input value={title} onChange={(event) => setTitle(event.target.value)} type="text" placeholder="문제를 구분할 제목을 입력하세요" />
-                            </label>
-                            <label>
-                                <span>문제 설명 및 시나리오</span>
-                                <textarea value={scenario} onChange={(event) => setScenario(event.target.value)} rows={4} placeholder="두 문제 유형이 함께 사용할 상황과 요구사항을 입력하세요" />
-                            </label>
-                        </div>
-                    </section>
-                    <ProblemFileEditor
-                        key={language}
-                        language={language}
-                        title={title}
-                        scenario={scenario}
-                        majorTopic={majorTopic}
-                        minorTopic={minorTopic}
-                        difficulty={difficulty}
-                    />
-                </>
+                <ProblemFileEditor
+                    key={language}
+                    language={language}
+                    majorTopic={majorTopic}
+                    minorTopic={minorTopic}
+                    difficulty={difficulty}
+                />
             ) : <AiCreationFields />}
         </div>
     );
@@ -165,6 +147,10 @@ const AiCreationFields = () => (
                     <option value="select">직접 선택</option>
                     <option value="all">전체 연구노트</option>
                 </select>
+            </label>
+            <label className="wide">
+                <span>문제 시나리오</span>
+                <textarea rows={5} placeholder="AI가 문제에 사용할 서비스 상황과 기능을 입력하세요" />
             </label>
             <label className="wide">
                 <span>추가 요청사항</span>

@@ -20,8 +20,6 @@ type VariantState = {
 
 type ProblemFileEditorProps = {
     language: 'Python' | 'C#';
-    title: string;
-    scenario: string;
     majorTopic: string;
     minorTopic: string;
     difficulty: string;
@@ -34,9 +32,15 @@ const makeEditorFileId = () => {
     return `practice-file-${Date.now()}-${editorFileSequence}`;
 };
 
+const DEFAULT_FILENAMES = {
+    Python: ['app.py', 'service.py', 'utils.py', 'models.py', 'config.py'],
+    'C#': ['Program.cs', 'Service.cs', 'Utilities.cs', 'Models.cs', 'Configuration.cs'],
+} as const;
+
 const makeFile = (language: 'Python' | 'C#', index: number): EditorFile => ({
     id: makeEditorFileId(),
-    filename: `${String.fromCharCode(97 + Math.min(index, 25))}.${language === 'Python' ? 'py' : 'cs'}`,
+    filename: DEFAULT_FILENAMES[language][index]
+        ?? `File${index + 1}.${language === 'Python' ? 'py' : 'cs'}`,
     content: '',
     hint: '',
 });
@@ -48,7 +52,7 @@ const makeVariant = (language: 'Python' | 'C#'): VariantState => {
 
 const blankKey = (fileId: string, line: number) => `${fileId}:${line}`;
 
-const ProblemFileEditor = ({ language, title, scenario, majorTopic, minorTopic, difficulty }: ProblemFileEditorProps) => {
+const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: ProblemFileEditorProps) => {
     const [activeType, setActiveType] = useState<ProblemType>('line_selection');
     const [variants, setVariants] = useState<Record<ProblemType, VariantState>>(() => ({
         line_selection: makeVariant(language),
@@ -72,7 +76,13 @@ const ProblemFileEditor = ({ language, title, scenario, majorTopic, minorTopic, 
 
     const addFile = () => {
         updateCurrentVariant((variant) => {
-            const file = makeFile(language, variant.files.length);
+            let index = variant.files.length;
+            let file = makeFile(language, index);
+            const filenames = new Set(variant.files.map((item) => item.filename));
+            while (filenames.has(file.filename)) {
+                index += 1;
+                file = makeFile(language, index);
+            }
             return { ...variant, files: [...variant.files, file], activeFileId: file.id };
         });
     };
@@ -115,8 +125,8 @@ const ProblemFileEditor = ({ language, title, scenario, majorTopic, minorTopic, 
         setIsSaving(true);
         try {
             const payload = {
-                title,
-                scenario,
+                title: `${minorTopic || majorTopic || language} 문제`,
+                scenario: '',
                 language,
                 major_topic: majorTopic,
                 minor_topic: minorTopic,
@@ -138,7 +148,7 @@ const ProblemFileEditor = ({ language, title, scenario, majorTopic, minorTopic, 
                 }),
             };
             await api.post('/api/practice/problems', payload);
-            setMessage('문제 세트가 임시 저장되었습니다.');
+            setMessage('문제 세트가 저장되었습니다. 공개 전까지 드래프트 상태로 유지됩니다.');
         } catch (error: unknown) {
             const responseMessage = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -232,7 +242,7 @@ const ProblemFileEditor = ({ language, title, scenario, majorTopic, minorTopic, 
             <div className="problem-create-actions">
                 {message && <span className="problem-save-message">{message}</span>}
                 <button type="button" className="secondary" onClick={saveProblem} disabled={isSaving}>
-                    {isSaving ? '저장 중...' : '임시 저장'}
+                    {isSaving ? '저장 중...' : '저장'}
                 </button>
                 <button type="button" className="primary" disabled>검토 후 공개</button>
             </div>
