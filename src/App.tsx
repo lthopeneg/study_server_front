@@ -18,6 +18,7 @@ import MyPage from './pages/Dashboard/MyPage';
 import NotesLayout from './pages/Dashboard/ResearchNotes/NotesLayout';
 import ExperimentIDE from './pages/Dashboard/ResearchNotes/ExperimentIDE';
 import ResearchFileBrowser from './pages/Dashboard/ResearchNotes/ResearchFileBrowser';
+import ResultsDashboard from './pages/Dashboard/ResearchNotes/ResultsDashboard';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAuthStore((state) => state.username);
@@ -75,7 +76,7 @@ function App() {
           <Route path="notes" element={<NotesLayout />}>
             <Route path="research" element={<ResearchFileBrowser section="notes" title="연구 노트" description="주차별 연구 기록을 선택해서 확인합니다." />} />
             <Route path="experiments" element={<ExperimentIDE />} />
-            <Route path="results" element={<ResearchFileBrowser section="results" title="결과" description="누적 평가와 최종 연구 결과를 확인합니다." />} />
+            <Route path="results" element={<ResultsDashboard />} />
             <Route path="*" element={<Navigate to="research" replace />} />
           </Route>
         </Route>
