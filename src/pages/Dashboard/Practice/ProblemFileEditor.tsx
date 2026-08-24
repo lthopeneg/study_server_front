@@ -27,8 +27,15 @@ type ProblemFileEditorProps = {
     difficulty: string;
 };
 
+let editorFileSequence = 0;
+
+const makeEditorFileId = () => {
+    editorFileSequence += 1;
+    return `practice-file-${Date.now()}-${editorFileSequence}`;
+};
+
 const makeFile = (language: 'Python' | 'C#', index: number): EditorFile => ({
-    id: crypto.randomUUID(),
+    id: makeEditorFileId(),
     filename: `${String.fromCharCode(97 + Math.min(index, 25))}.${language === 'Python' ? 'py' : 'cs'}`,
     content: '',
     hint: '',
