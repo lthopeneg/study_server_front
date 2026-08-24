@@ -48,7 +48,7 @@ const ProblemList = ({ language }: ProblemListProps) => {
                     <label>
                         <span>대주제</span>
                         <select value={majorTopic} onChange={(event) => handleMajorTopicChange(event.target.value)}>
-                            <option value="">전체 대주제</option>
+                            <option value="">전체</option>
                             {topicGroups.map((group) => (
                                 <option key={group.title} value={group.title}>{group.title}</option>
                             ))}
@@ -65,7 +65,7 @@ const ProblemList = ({ language }: ProblemListProps) => {
                             disabled={!majorTopic || minorTopics.length === 0}
                         >
                             <option value="">
-                                {language === 'C#' ? 'C# 분류 준비 중' : majorTopic ? '전체 소주제' : '대주제를 먼저 선택하세요'}
+                                {language === 'C#' ? 'C# 분류 준비 중' : majorTopic ? '전체' : '대주제를 먼저 선택하세요'}
                             </option>
                             {minorTopics.map((topic) => (
                                 <option key={topic} value={topic}>{topic}</option>
