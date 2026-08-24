@@ -22,7 +22,7 @@ const DashboardHome = () => {
     }, []);
 
     // 기본 메뉴 데이터
-    let menus = [
+    const menus = [
         { id: 'learning', title: '📖 학습 (Learning)', desc: '시큐어코딩의 핵심 이론과 방어 기법을 학습합니다.', color: '#3b82f6', path: '/learning' },
         { id: 'practice', title: '💻 실습 (Practice)', desc: '다양한 웹 취약점 모의 해킹 및 방어 실습을 진행합니다.', color: '#10b981', path: '/practice' },
         { id: 'news', title: '📰 보안뉴스 (News)', desc: '최신 사이버 보안 동향과 해킹 사고 사례를 확인합니다.', color: '#f59e0b', path: '/news' },
@@ -36,7 +36,7 @@ const DashboardHome = () => {
             title: '📝 연구 노트 (Notes)', 
             desc: '생성형 AI 시큐어코딩 출제 실험 및 실행 결과를 확인합니다.', 
             color: '#ef4444', // 강렬한 빨간색으로 포인트
-            path: '/notes' 
+            path: '/notes/research'
         });
     }
 
