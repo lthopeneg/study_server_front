@@ -120,6 +120,89 @@
     font-weight: 800;
 }
 
+.practice-filter {
+    margin: 1.5rem 1.5rem 0;
+    padding: 1.15rem 1.25rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.practice-filter-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    margin-bottom: 0.9rem;
+}
+
+.practice-filter-heading strong {
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.practice-filter-heading span {
+    color: #94a3b8;
+    font-size: 0.78rem;
+}
+
+.practice-filter-controls {
+    display: grid;
+    grid-template-columns: minmax(150px, 0.8fr) auto minmax(220px, 1.5fr) auto minmax(110px, 0.55fr) auto;
+    align-items: end;
+    gap: 0.65rem;
+}
+
+.practice-filter-controls label {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.practice-filter-controls label > span {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.practice-filter-controls select,
+.practice-filter-controls input {
+    width: 100%;
+    height: 2.55rem;
+    padding: 0 0.7rem;
+    color: #334155;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    box-sizing: border-box;
+}
+
+.practice-filter-controls select:disabled {
+    color: #94a3b8;
+    background: #f1f5f9;
+}
+
+.practice-filter-divider {
+    padding-bottom: 0.7rem;
+    color: #cbd5e1;
+    font-weight: 800;
+}
+
+.practice-filter-controls button {
+    height: 2.55rem;
+    padding: 0 1.25rem;
+    color: #ffffff;
+    background: #059669;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.practice-filter-controls button:hover {
+    background: #047857;
+}
+
 .practice-empty-state,
 .practice-status {
     margin: 1.5rem;
@@ -207,5 +290,18 @@
         margin: 0;
         border: 0;
         border-radius: 0;
+    }
+
+    .practice-filter-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .practice-filter-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .practice-filter-divider {
+        display: none;
     }
 }
