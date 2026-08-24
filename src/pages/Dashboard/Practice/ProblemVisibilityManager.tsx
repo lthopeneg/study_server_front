@@ -3,7 +3,6 @@ import { api } from '../../../services/api';
 
 type ProblemSummary = {
     id: number;
-    title: string;
     language: string;
     major_topic: string;
     minor_topic: string;
@@ -47,7 +46,7 @@ const ProblemVisibilityManager = () => {
             const response = await api.patch(`/api/practice/problems/${problem.id}/status`, { status: nextStatus });
             setProblems((current) => current.map((item) => item.id === problem.id ? response.data.data : item));
         } catch {
-            setMessage('공개 상태를 변경하지 못했습니다.');
+            setMessage('활성 상태를 변경하지 못했습니다.');
         } finally {
             setChangingId(null);
         }
@@ -59,8 +58,8 @@ const ProblemVisibilityManager = () => {
         <div className="problem-visibility-manager">
             <div className="problem-manager-guide">
                 <div>
-                    <strong>문제 공개 관리</strong>
-                    <span>스위치를 켜면 문제 목록에 공개되고, 끄면 드래프트 상태로 전환됩니다.</span>
+                    <strong>문제 활성 관리</strong>
+                    <span>스위치를 켜면 문제 목록에 표시되고, 끄면 비활성 상태로 전환됩니다.</span>
                 </div>
                 <span>{problems.length}개 문제 세트</span>
             </div>
@@ -73,33 +72,48 @@ const ProblemVisibilityManager = () => {
                     <p>문제 출제하기에서 문제 세트를 먼저 저장해주세요.</p>
                 </div>
             ) : (
-                <div className="problem-manager-list">
-                    {problems.map((problem) => {
-                        const isPublished = problem.status === 'published';
-                        return (
-                            <article key={problem.id} className="problem-manager-item">
-                                <div className="problem-manager-id">#{problem.id}</div>
-                                <div className="problem-manager-info">
-                                    <strong>{problem.title}</strong>
-                                    <span>{problem.language} · {problem.major_topic} · {problem.minor_topic}</span>
-                                    <small>{difficultyLabels[problem.difficulty] ?? problem.difficulty} · {problem.creation_method === 'manual' ? '직접 출제' : 'AI 출제'}</small>
-                                </div>
-                                <div className="problem-manager-status">
-                                    <span className={isPublished ? 'published' : 'draft'}>{isPublished ? '공개' : '드래프트'}</span>
-                                    <label className="visibility-switch">
-                                        <input
-                                            type="checkbox"
-                                            checked={isPublished}
-                                            disabled={changingId === problem.id}
-                                            onChange={(event) => changeStatus(problem, event.target.checked)}
-                                            aria-label={`${problem.title} 공개 상태`}
-                                        />
-                                        <span aria-hidden="true" />
-                                    </label>
-                                </div>
-                            </article>
-                        );
-                    })}
+                <div className="problem-manager-table-wrap">
+                    <table className="problem-manager-table">
+                        <thead>
+                            <tr>
+                                <th>문제 번호</th>
+                                <th>언어</th>
+                                <th>대주제</th>
+                                <th>소주제</th>
+                                <th>난이도</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {problems.map((problem) => {
+                                const isPublished = problem.status === 'published';
+                                return (
+                                    <tr key={problem.id}>
+                                        <td>#{problem.id}</td>
+                                        <td>{problem.language}</td>
+                                        <td>{problem.major_topic}</td>
+                                        <td>{problem.minor_topic}</td>
+                                        <td>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</td>
+                                        <td>
+                                            <div className="problem-manager-status">
+                                                <span className={isPublished ? 'published' : 'draft'}>{isPublished ? '활성' : '비활성'}</span>
+                                                <label className="visibility-switch">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isPublished}
+                                                        disabled={changingId === problem.id}
+                                                        onChange={(event) => changeStatus(problem, event.target.checked)}
+                                                        aria-label={`문제 ${problem.id} 활성 상태`}
+                                                    />
+                                                    <span aria-hidden="true" />
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </div>

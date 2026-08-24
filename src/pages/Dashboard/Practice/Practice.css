@@ -823,6 +823,47 @@
     margin-top: 0.85rem;
 }
 
+.problem-manager-table-wrap {
+    margin-top: 0.85rem;
+    overflow-x: auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+}
+
+.problem-manager-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.problem-manager-table th,
+.problem-manager-table td {
+    padding: 0.8rem 0.9rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.problem-manager-table th {
+    color: #64748b;
+    background: #f8fafc;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.problem-manager-table td {
+    color: #334155;
+}
+
+.problem-manager-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.problem-manager-table tbody tr:hover {
+    background: #f8fafc;
+}
+
 .problem-manager-item {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
