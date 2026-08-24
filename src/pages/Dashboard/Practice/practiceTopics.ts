@@ -22,6 +22,7 @@ export const pythonTopicGroups: PracticeTopicGroup[] = [
             'HTTP 응답분할',
             '정수형 오버플로우',
             '보안기능 결정에 사용되는 부적절한 입력값',
+            '메모리 버퍼 오버플로우',
             '포맷 스트링 삽입',
         ],
     },
@@ -37,6 +38,8 @@ export const pythonTopicGroups: PracticeTopicGroup[] = [
             '충분하지 않은 키 길이 사용',
             '적절하지 않은 난수 값 사용',
             '취약한 패스워드 허용',
+            '비밀번호 평문 전송',
+            '패스워드 관리 부재',
             '부적절한 전자서명 확인',
             '부적절한 인증서 유효성 검증',
             '사용자 하드디스크에 저장되는 쿠키를 통한 정보 노출',
@@ -56,7 +59,13 @@ export const pythonTopicGroups: PracticeTopicGroup[] = [
     },
     {
         title: '코드오류',
-        topics: ['Null Pointer 역참조', '부적절한 자원 해제', '신뢰할 수 없는 데이터의 역직렬화'],
+        topics: [
+            'Null Pointer 역참조',
+            '부적절한 자원 해제',
+            '해제된 자원 사용',
+            '초기화되지 않은 변수 사용',
+            '신뢰할 수 없는 데이터의 역직렬화',
+        ],
     },
     {
         title: '캡슐화',
