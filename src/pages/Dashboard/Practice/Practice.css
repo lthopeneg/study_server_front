@@ -243,6 +243,48 @@
     font-weight: 900;
 }
 
+.published-problem-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.85rem;
+    padding: 1.5rem;
+}
+
+.published-problem-list article {
+    padding: 1rem 1.1rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid #10b981;
+    border-radius: 8px;
+}
+
+.published-problem-list article > span {
+    color: #059669;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.published-problem-list h2 {
+    margin: 0.45rem 0;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.published-problem-list p {
+    margin: 0 0 0.7rem;
+    color: #64748b;
+    font-size: 0.78rem;
+}
+
+.published-problem-list small {
+    padding: 0.22rem 0.48rem;
+    color: #047857;
+    background: #d1fae5;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
 .practice-status-denied {
     color: #9f1239;
     background: #fff1f2;
@@ -732,6 +774,176 @@
     opacity: 0.55;
 }
 
+.problem-visibility-manager {
+    padding: 1.25rem 1.5rem 2rem;
+    background: #f8fafc;
+}
+
+.problem-manager-guide {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+}
+
+.problem-manager-guide > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.problem-manager-guide strong {
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.problem-manager-guide span {
+    color: #64748b;
+    font-size: 0.78rem;
+}
+
+.problem-manager-message {
+    margin-top: 0.85rem;
+    padding: 0.75rem 1rem;
+    color: #9f1239;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-radius: 7px;
+    font-size: 0.82rem;
+}
+
+.problem-manager-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.85rem;
+}
+
+.problem-manager-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+}
+
+.problem-manager-id {
+    color: #94a3b8;
+    font-family: Consolas, monospace;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.problem-manager-info {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.28rem;
+}
+
+.problem-manager-info strong {
+    color: #1e293b;
+    font-size: 0.92rem;
+}
+
+.problem-manager-info span,
+.problem-manager-info small {
+    overflow: hidden;
+    color: #64748b;
+    font-size: 0.76rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.problem-manager-info small {
+    color: #94a3b8;
+}
+
+.problem-manager-status {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.problem-manager-status > span {
+    min-width: 3.2rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.problem-manager-status > span.published {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.problem-manager-status > span.draft {
+    color: #64748b;
+    background: #e2e8f0;
+}
+
+.visibility-switch {
+    position: relative;
+    display: inline-flex;
+    width: 2.7rem;
+    height: 1.5rem;
+}
+
+.visibility-switch input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.visibility-switch > span {
+    width: 100%;
+    background: #cbd5e1;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.18s ease;
+}
+
+.visibility-switch > span::after {
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+    content: '';
+    transition: transform 0.18s ease;
+}
+
+.visibility-switch input:checked + span {
+    background: #10b981;
+}
+
+.visibility-switch input:checked + span::after {
+    transform: translateX(1.2rem);
+}
+
+.visibility-switch input:focus-visible + span {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+}
+
+.visibility-switch input:disabled + span {
+    cursor: wait;
+    opacity: 0.6;
+}
+
 @media (max-width: 720px) {
     .practice-layout {
         flex-direction: column;
@@ -810,5 +1022,18 @@
         grid-template-rows: auto auto;
         border-top: 1px solid #e2e8f0;
         border-left: 0;
+    }
+
+    .problem-manager-guide,
+    .problem-manager-item {
+        align-items: flex-start;
+    }
+
+    .problem-manager-item {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .problem-manager-status {
+        grid-column: 2;
     }
 }

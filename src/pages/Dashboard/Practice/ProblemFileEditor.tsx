@@ -148,7 +148,7 @@ const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: Pro
                 }),
             };
             await api.post('/api/practice/problems', payload);
-            setMessage('문제 세트가 임시 저장되었습니다.');
+            setMessage('문제 세트가 저장되었습니다. 공개 전까지 드래프트 상태로 유지됩니다.');
         } catch (error: unknown) {
             const responseMessage = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -242,7 +242,7 @@ const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: Pro
             <div className="problem-create-actions">
                 {message && <span className="problem-save-message">{message}</span>}
                 <button type="button" className="secondary" onClick={saveProblem} disabled={isSaving}>
-                    {isSaving ? '저장 중...' : '임시 저장'}
+                    {isSaving ? '저장 중...' : '저장'}
                 </button>
                 <button type="button" className="primary" disabled>검토 후 공개</button>
             </div>

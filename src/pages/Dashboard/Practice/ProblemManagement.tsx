@@ -1,6 +1,7 @@
 import { useOutletContext } from 'react-router-dom';
 import type { PracticeOutletContext } from './PracticeLayout';
 import CreateProblemForm from './CreateProblemForm';
+import ProblemVisibilityManager from './ProblemVisibilityManager';
 
 type ManagementMode = 'create' | 'edit' | 'delete';
 
@@ -48,6 +49,8 @@ const ProblemManagement = ({ mode }: { mode: ManagementMode }) => {
 
             {mode === 'create' ? (
                 <CreateProblemForm />
+            ) : mode === 'edit' ? (
+                <ProblemVisibilityManager />
             ) : (
                 <div className="practice-empty-state compact">
                     <h2>관리 기능 준비 중</h2>
