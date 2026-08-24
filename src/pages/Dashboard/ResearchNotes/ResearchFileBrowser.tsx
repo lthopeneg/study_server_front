@@ -15,6 +15,18 @@ interface ResearchFileBrowserProps {
     description: string;
 }
 
+const getNoteOrder = (fileName: string) => {
+    const match = fileName.match(/^(\d+)_/);
+    return match ? Number(match[1]) : -1;
+};
+
+const getFileLabel = (file: ResearchFile, section: ResearchSection) => {
+    if (section !== 'notes') return file.name;
+
+    const match = file.name.match(/^\d+_(\d+월\s+\d+주차)(?:\.[^.]+)?$/);
+    return match?.[1] ?? file.name;
+};
+
 const ResearchFileBrowser = ({ section, title, description }: ResearchFileBrowserProps) => {
     const [files, setFiles] = useState<ResearchFile[]>([]);
     const [selectedPath, setSelectedPath] = useState('');
@@ -27,7 +39,10 @@ const ResearchFileBrowser = ({ section, title, description }: ResearchFileBrowse
             setError('');
             try {
                 const response = await api.get(`/api/notes/section-files?section=${section}`);
-                const nextFiles: ResearchFile[] = response.data.files ?? [];
+                const responseFiles: ResearchFile[] = response.data.files ?? [];
+                const nextFiles = section === 'notes'
+                    ? [...responseFiles].sort((a, b) => getNoteOrder(b.name) - getNoteOrder(a.name))
+                    : responseFiles;
                 setFiles(nextFiles);
                 setSelectedPath(nextFiles[0]?.path ?? '');
             } catch {
@@ -54,7 +69,7 @@ const ResearchFileBrowser = ({ section, title, description }: ResearchFileBrowse
                         <span>문서 선택</span>
                         <select value={selectedPath} onChange={(event) => setSelectedPath(event.target.value)}>
                             {files.map((file) => (
-                                <option key={file.path} value={file.path}>{file.name}</option>
+                                <option key={file.path} value={file.path}>{getFileLabel(file, section)}</option>
                             ))}
                         </select>
                     </label>
