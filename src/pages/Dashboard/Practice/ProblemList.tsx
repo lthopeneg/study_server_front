@@ -8,7 +8,6 @@ type ProblemListProps = {
 
 type PublishedProblem = {
     id: number;
-    title: string;
     language: string;
     major_topic: string;
     minor_topic: string;
@@ -144,7 +143,7 @@ const ProblemList = ({ language }: ProblemListProps) => {
                     {filteredProblems.map((problem) => (
                         <article key={problem.id}>
                             <span>문제 #{problem.id}</span>
-                            <h2>{problem.title}</h2>
+                            <h2>문제 #{problem.id}</h2>
                             <p>{problem.major_topic} · {problem.minor_topic}</p>
                             <small>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</small>
                         </article>

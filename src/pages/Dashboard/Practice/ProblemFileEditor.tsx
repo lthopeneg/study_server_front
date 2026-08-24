@@ -8,12 +8,12 @@ type EditorFile = {
     id: string;
     filename: string;
     content: string;
-    hint: string;
 };
 
 type VariantState = {
     files: EditorFile[];
     activeFileId: string;
+    hint: string;
     selectedLines: Record<string, number[]>;
     blankAnswers: Record<string, string>;
 };
@@ -42,12 +42,11 @@ const makeFile = (language: 'Python' | 'C#', index: number): EditorFile => ({
     filename: DEFAULT_FILENAMES[language][index]
         ?? `File${index + 1}.${language === 'Python' ? 'py' : 'cs'}`,
     content: '',
-    hint: '',
 });
 
 const makeVariant = (language: 'Python' | 'C#'): VariantState => {
     const file = makeFile(language, 0);
-    return { files: [file], activeFileId: file.id, selectedLines: {}, blankAnswers: {} };
+    return { files: [file], activeFileId: file.id, hint: '', selectedLines: {}, blankAnswers: {} };
 };
 
 const blankKey = (fileId: string, line: number) => `${fileId}:${line}`;
@@ -142,13 +141,14 @@ const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: Pro
                         }));
                     return {
                         problem_type: problemType,
-                        files: variant.files.map(({ filename, content, hint }) => ({ filename, content, hint })),
+                        hint: variant.hint,
+                        files: variant.files.map(({ filename, content }) => ({ filename, content })),
                         answers,
                     };
                 }),
             };
             await api.post('/api/practice/problems', payload);
-            setMessage('문제 세트가 저장되었습니다. 공개 전까지 드래프트 상태로 유지됩니다.');
+            setMessage('문제 세트가 저장되었습니다. 활성화 전까지 비활성 상태로 유지됩니다.');
         } catch (error: unknown) {
             const responseMessage = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -212,8 +212,13 @@ const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: Pro
 
                 <aside className="problem-answer-sidebar">
                     <label>
-                        <span>힌트 · {activeFile.filename}</span>
-                        <textarea rows={6} value={activeFile.hint} onChange={(event) => updateActiveFile({ hint: event.target.value })} placeholder="현재 파일의 힌트를 입력하세요" />
+                        <span>{activeType === 'line_selection' ? '1유형' : '2유형'} 공통 힌트</span>
+                        <textarea
+                            rows={6}
+                            value={currentVariant.hint}
+                            onChange={(event) => updateCurrentVariant((variant) => ({ ...variant, hint: event.target.value }))}
+                            placeholder="현재 유형의 모든 파일이 공유할 힌트를 입력하세요"
+                        />
                     </label>
                     <div className="problem-answer-panel">
                         <strong>정답</strong>
@@ -244,7 +249,6 @@ const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: Pro
                 <button type="button" className="secondary" onClick={saveProblem} disabled={isSaving}>
                     {isSaving ? '저장 중...' : '저장'}
                 </button>
-                <button type="button" className="primary" disabled>검토 후 공개</button>
             </div>
         </section>
     );
