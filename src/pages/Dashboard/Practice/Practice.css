@@ -1,0 +1,211 @@
+.practice-layout {
+    display: flex;
+    min-height: calc(100vh - 194px);
+    margin: -2rem 0 -2rem -2rem;
+}
+
+.practice-sidebar {
+    position: sticky;
+    top: 130px;
+    width: 184px;
+    height: calc(100vh - 130px);
+    flex: 0 0 184px;
+    align-self: flex-start;
+    padding: 1.25rem 0.75rem;
+    overflow-y: auto;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+.practice-title {
+    display: block;
+    margin: 0 0.5rem 1.25rem;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.practice-menu-section {
+    position: relative;
+    margin-top: 1.25rem;
+}
+
+.practice-menu-section h2 {
+    margin: 0 0.75rem 0.5rem;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.practice-admin-section {
+    padding-top: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.practice-admin-badge {
+    display: inline-block;
+    margin: 0 0.75rem 0.6rem;
+    padding: 0.18rem 0.45rem;
+    color: #9f1239;
+    background: #ffe4e6;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.practice-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.practice-menu-item {
+    padding: 0.65rem 0.75rem;
+    color: #64748b;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.practice-menu-item:hover {
+    color: #0f172a;
+    background: #f1f5f9;
+}
+
+.practice-menu-item.active {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.practice-content {
+    min-width: 0;
+    flex: 1;
+    margin: 1rem 1rem 1rem 0;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 0;
+    border-radius: 0 10px 10px 0;
+}
+
+.practice-page {
+    min-height: 100%;
+}
+
+.practice-page-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.practice-page-header h1 {
+    margin: 0.25rem 0 0;
+    color: #0f172a;
+    font-size: 1.45rem;
+}
+
+.practice-page-header p {
+    margin: 0.45rem 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.practice-eyebrow {
+    color: #059669;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.practice-empty-state,
+.practice-status {
+    margin: 1.5rem;
+    padding: 4rem 1.5rem;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.practice-empty-state.compact {
+    padding: 3rem 1.5rem;
+}
+
+.practice-empty-state h2,
+.practice-status h1 {
+    margin: 0.85rem 0 0.5rem;
+    color: #334155;
+    font-size: 1.1rem;
+}
+
+.practice-empty-state p,
+.practice-status p {
+    margin: 0;
+}
+
+.practice-language-mark {
+    display: inline-flex;
+    width: 3rem;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: #059669;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.practice-status-denied {
+    color: #9f1239;
+    background: #fff1f2;
+    border-color: #fecdd3;
+}
+
+.practice-status-denied h1 {
+    color: #9f1239;
+}
+
+@media (max-width: 720px) {
+    .practice-layout {
+        flex-direction: column;
+        margin: -2rem;
+    }
+
+    .practice-sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        flex-basis: auto;
+        padding: 0.75rem;
+        border-right: 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .practice-title {
+        margin-bottom: 0.75rem;
+    }
+
+    .practice-menu-section {
+        margin-top: 0.75rem;
+    }
+
+    .practice-menu {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .practice-menu-item {
+        flex: 0 0 auto;
+    }
+
+    .practice-content {
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+    }
+}

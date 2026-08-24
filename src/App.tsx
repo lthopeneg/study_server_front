@@ -11,7 +11,9 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // 4개의 대시보드 하위 페이지 임포트
 import DashboardHome from './pages/Dashboard/DashboardHome';
 import Learning from './pages/Dashboard/Learning';
-import Practice from './pages/Dashboard/Practice';
+import PracticeLayout from './pages/Dashboard/Practice/PracticeLayout';
+import ProblemList from './pages/Dashboard/Practice/ProblemList';
+import ProblemManagement from './pages/Dashboard/Practice/ProblemManagement';
 import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
 
@@ -68,7 +70,15 @@ function App() {
           {/* <Outlet /> 자리에 쏙쏙 들어갈 하위 라우트들 (Nested Routes) */}
           <Route index element={<DashboardHome />} /> 
           <Route path="learning" element={<Learning />} />
-          <Route path="practice" element={<Practice />} />
+          <Route path="practice" element={<PracticeLayout />}>
+            <Route index element={<Navigate to="python" replace />} />
+            <Route path="python" element={<ProblemList language="Python" />} />
+            <Route path="csharp" element={<ProblemList language="C#" />} />
+            <Route path="manage/create" element={<ProblemManagement mode="create" />} />
+            <Route path="manage/edit" element={<ProblemManagement mode="edit" />} />
+            <Route path="manage/delete" element={<ProblemManagement mode="delete" />} />
+            <Route path="*" element={<Navigate to="python" replace />} />
+          </Route>
           <Route path="news" element={<SecurityNews />} />
           <Route path="mypage" element={<MyPage />} />
           
