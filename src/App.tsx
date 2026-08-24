@@ -16,8 +16,11 @@ import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
 
 import NotesLayout from './pages/Dashboard/ResearchNotes/NotesLayout';
+import NotesDashboard from './pages/Dashboard/ResearchNotes/NotesDashboard';
 import ExperimentIDE from './pages/Dashboard/ResearchNotes/ExperimentIDE';
-import ResearchFileBrowser from './pages/Dashboard/ResearchNotes/ResearchFileBrowser';
+import MetricsDashboard from './pages/Dashboard/ResearchNotes/MetricsDashboard';
+import ProblemBank from './pages/Dashboard/ResearchNotes/ProblemBank';
+import PromptList from './pages/Dashboard/ResearchNotes/PromptList';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAuthStore((state) => state.username);
@@ -36,7 +39,7 @@ function App() {
         if (response.data.status === 'success') {
           login(response.data.username, response.data.expires_at);
         }
-      } catch {
+      } catch (error) {
         console.log("세션 만료 또는 로그인되지 않음");
       } finally {
         setIsCheckingAuth(false);
@@ -73,10 +76,27 @@ function App() {
           
           {/* 연구 노트 라우트 */}
           <Route path="notes" element={<NotesLayout />}>
-            <Route path="research" element={<ResearchFileBrowser section="notes" title="연구 노트" description="주차별 연구 기록을 선택해서 확인합니다." />} />
+            {/* 1. 대시보드 */}
+            <Route path="executive_summary" element={<NotesDashboard filePath="Reports/executive_summary.md" />} />
+            <Route path="metrics" element={<MetricsDashboard />} />
+            <Route path="evaluation_records" element={<NotesDashboard filePath="Reports/cumulative_evaluation_records.csv" />} />
+            
+            {/* 2. 연구 및 실험 */}
+            <Route path="timeline" element={<NotesDashboard filePath="Reports/weekly_artifact_index.md" />} />
             <Route path="experiments" element={<ExperimentIDE />} />
-            <Route path="results" element={<ResearchFileBrowser section="results" title="결과" description="누적 평가와 최종 연구 결과를 확인합니다." />} />
-            <Route path="*" element={<Navigate to="research" replace />} />
+
+            {/* 3. 프롬프트 관리 */}
+            <Route path="prompt_list" element={<PromptList />} />
+            <Route path="versions" element={<NotesDashboard filePath="Prompts/history/prompt_version_history.md" />} />
+
+            {/* 4. 산출물 및 보고서 */}
+            <Route path="problem_bank" element={<ProblemBank />} />
+            <Route path="reviewer_scorecard" element={<NotesDashboard filePath="Evaluation/reviewer_scorecard.md" />} />
+            <Route path="architecture" element={<NotesDashboard filePath="Reports/system_architecture_diagram.md" />} />
+            <Route path="manifest" element={<NotesDashboard filePath="Reports/artifact_manifest.json" />} />
+
+            {/* 매칭되지 않는 주소는 요약 화면으로 */}
+            <Route path="*" element={<Navigate to="executive_summary" replace />} />
           </Route>
         </Route>
       </Routes>
