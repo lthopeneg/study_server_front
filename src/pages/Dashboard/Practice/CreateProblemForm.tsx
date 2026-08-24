@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { commonTopicGroups, pythonTopicGroups } from './practiceTopics';
-import ProblemFileEditor from './ProblemFileEditor';
+import ProblemFileEditor, { type GeneratedVariant } from './ProblemFileEditor';
+import { api } from '../../../services/api';
 
 type CreationMethod = 'manual' | 'ai';
 type PracticeLanguage = 'Python' | 'C#';
@@ -109,10 +110,6 @@ const CreateProblemForm = () => {
                             <option value="advanced">고급</option>
                         </select>
                     </label>
-                    <label>
-                        <span>문제 세트 수</span>
-                        <input type="number" min="1" max="10" defaultValue="1" />
-                    </label>
                 </div>
             </section>
 
@@ -124,13 +121,67 @@ const CreateProblemForm = () => {
                     minorTopic={minorTopic}
                     difficulty={difficulty}
                 />
-            ) : <AiCreationFields />}
+            ) : (
+                <AiCreationFields
+                    language={language}
+                    majorTopic={majorTopic}
+                    minorTopic={minorTopic}
+                    difficulty={difficulty}
+                />
+            )}
         </div>
     );
 };
 
-const AiCreationFields = () => (
-    <section className="problem-create-section">
+const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
+    language: PracticeLanguage;
+    majorTopic: string;
+    minorTopic: string;
+    difficulty: string;
+}) => {
+    const [minimumFiles, setMinimumFiles] = useState(3);
+    const [referenceScope, setReferenceScope] = useState<'latest' | 'all'>('latest');
+    const [scenario, setScenario] = useState('');
+    const [extraRequest, setExtraRequest] = useState('');
+    const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[] | null>(null);
+    const [generationKey, setGenerationKey] = useState(0);
+    const [message, setMessage] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const generateProblem = async () => {
+        if (!majorTopic || !minorTopic) {
+            setMessage('대주제와 소주제를 선택해주세요.');
+            return;
+        }
+        setMessage('');
+        setIsGenerating(true);
+        try {
+            const response = await api.post('/api/practice/problems/generate', {
+                language,
+                major_topic: majorTopic,
+                minor_topic: minorTopic,
+                difficulty,
+                minimum_files: minimumFiles,
+                reference_scope: referenceScope,
+                scenario,
+                extra_request: extraRequest,
+            });
+            setGeneratedVariants(response.data.data.variants);
+            setGenerationKey((current) => current + 1);
+            setMessage('AI 초안이 생성되었습니다. 내용을 검토하고 수정한 뒤 저장해주세요.');
+        } catch (error: unknown) {
+            const responseMessage = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                : undefined;
+            setMessage(responseMessage ?? 'AI 문제를 생성하지 못했습니다.');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    return (
+        <>
+        <section className="problem-create-section">
         <div className="problem-create-section-heading">
             <span>3</span>
             <div>
@@ -141,38 +192,75 @@ const AiCreationFields = () => (
 
         <div className="problem-create-grid ai-settings">
             <label>
+                <span>유형별 최소 파일 수</span>
+                <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={minimumFiles}
+                    onChange={(event) => {
+                        const nextValue = Number(event.target.value);
+                        if (Number.isInteger(nextValue)) setMinimumFiles(nextValue);
+                    }}
+                    onBlur={() => setMinimumFiles((current) => Math.min(20, Math.max(1, current)))}
+                />
+                <small>
+                    1유형과 2유형에 각각 최소 {minimumFiles}개 파일을 생성합니다.
+                </small>
+            </label>
+            <label>
                 <span>연구노트 범위</span>
-                <select defaultValue="latest">
+                <select value={referenceScope} onChange={(event) => setReferenceScope(event.target.value as 'latest' | 'all')}>
                     <option value="latest">최신 연구노트</option>
-                    <option value="select">직접 선택</option>
-                    <option value="all">전체 연구노트</option>
+                    <option value="all">관련 연구노트 전체</option>
                 </select>
             </label>
             <label className="wide">
                 <span>문제 시나리오</span>
-                <textarea rows={5} placeholder="AI가 문제에 사용할 서비스 상황과 기능을 입력하세요" />
+                <textarea value={scenario} onChange={(event) => setScenario(event.target.value)} maxLength={5000} rows={5} placeholder="AI가 문제에 사용할 서비스 상황과 기능을 입력하세요" />
             </label>
             <label className="wide">
                 <span>추가 요청사항</span>
-                <textarea rows={4} placeholder="문제에 반영할 조건이 있으면 입력하세요" />
+                <textarea value={extraRequest} onChange={(event) => setExtraRequest(event.target.value)} maxLength={5000} rows={4} placeholder="문제에 반영할 조건이 있으면 입력하세요" />
             </label>
         </div>
 
         <div className="ai-generation-notice">
             <div>
+                <strong>1유형 힌트 구성</strong>
+                <span>외부 입력의 유입 지점, 검증이 충분하지 않은 지점, 문제가 발생하는 최종 지점을 코드 흐름에 맞춰 안내합니다.</span>
+            </div>
+            <div>
                 <strong>생성 결과는 바로 공개되지 않습니다.</strong>
                 <span>AI가 만든 두 유형을 미리보기에서 검토하고 수정한 뒤 등록합니다.</span>
             </div>
             <div>
-                <strong>예상 API 비용</strong>
-                <span>모델과 연구노트 범위를 연결하면 생성 전에 계산됩니다.</span>
+                <strong>API 사용량</strong>
+                <span>생성 버튼을 누를 때마다 선택한 연구노트와 생성 결과만큼 API 사용량이 발생합니다.</span>
             </div>
         </div>
 
         <div className="problem-create-actions">
-            <button type="button" className="primary">AI 문제 세트 생성</button>
+            {message && <span className="problem-save-message">{message}</span>}
+            <button type="button" className="primary" onClick={generateProblem} disabled={isGenerating}>
+                {isGenerating ? 'AI 생성 중...' : 'AI 문제 세트 생성'}
+            </button>
         </div>
-    </section>
-);
+        </section>
+        {generatedVariants && (
+            <ProblemFileEditor
+                key={`ai-${generationKey}`}
+                language={language}
+                majorTopic={majorTopic}
+                minorTopic={minorTopic}
+                difficulty={difficulty}
+                initialVariants={generatedVariants}
+                creationMethod="ai"
+                scenario={scenario}
+            />
+        )}
+        </>
+    );
+};
 
 export default CreateProblemForm;
