@@ -28,6 +28,8 @@ const SecurityNews = () => {
     const [aiViewMode, setAiViewMode] = useState<'list' | 'detail'>('list');
     const [aiHistory, setAiHistory] = useState<DailyMain[]>([]);
     const [historyLoading, setHistoryLoading] = useState(true);
+    const [historyPage, setHistoryPage] = useState(1);
+    const [historyTotalPages, setHistoryTotalPages] = useState(1);
 
     const [dailyMain, setDailyMain] = useState<DailyMain | null>(null);
     const [mainLoading, setMainLoading] = useState(true);
@@ -44,9 +46,10 @@ const SecurityNews = () => {
             const fetchAiHistory = async () => {
                 setHistoryLoading(true);
                 try {
-                    const response = await api.get('/api/news/ai-history');
+                    const response = await api.get(`/api/news/ai-history?page=${historyPage}&limit=12`);
                     if (response.data.status === 'success') {
                         setAiHistory(response.data.data);
+                        setHistoryTotalPages(Math.max(response.data.total_pages, 1));
                     }
                 } catch (error) {
                     console.error('AI 히스토리 불러오기 실패:', error);
@@ -56,7 +59,7 @@ const SecurityNews = () => {
             };
             fetchAiHistory();
         }
-    }, [activeTab, aiViewMode]);
+    }, [activeTab, aiViewMode, historyPage]);
 
     // [API] 전체 일반 뉴스 가져오기
     useEffect(() => {
@@ -161,6 +164,7 @@ const SecurityNews = () => {
                             ) : aiHistory.length === 0 ? (
                                 <div style={{ textAlign: 'center', color: '#94a3b8', padding: '3rem 0' }}>작성된 AI 메인 뉴스가 없습니다.</div>
                             ) : (
+                                <>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                                     {aiHistory.map((item) => (
                                         <div
@@ -201,6 +205,26 @@ const SecurityNews = () => {
                                         </div>
                                     ))}
                                 </div>
+                                {historyTotalPages > 1 && (
+                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+                                        <button
+                                            onClick={() => setHistoryPage((current) => Math.max(current - 1, 1))}
+                                            disabled={historyPage === 1}
+                                            style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: 'white', cursor: historyPage === 1 ? 'not-allowed' : 'pointer' }}
+                                        >
+                                            이전
+                                        </button>
+                                        <span style={{ color: '#475569', fontWeight: 'bold' }}>{historyPage} / {historyTotalPages}</span>
+                                        <button
+                                            onClick={() => setHistoryPage((current) => Math.min(current + 1, historyTotalPages))}
+                                            disabled={historyPage === historyTotalPages}
+                                            style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: 'white', cursor: historyPage === historyTotalPages ? 'not-allowed' : 'pointer' }}
+                                        >
+                                            다음
+                                        </button>
+                                    </div>
+                                )}
+                                </>
                             )}
                         </div>
                     ) : (
@@ -233,7 +257,7 @@ const SecurityNews = () => {
                                     </h1>
                                     <div style={{ lineHeight: '1.8', color: '#334155', fontSize: '1.05rem' }}>
                                         <ReactMarkdown>
-                                            {dailyMain.content_md.replace(/(?<!\])\((https?:\/\/[^\s\)]+)\)/g, '(<$1>)')}
+                                            {dailyMain.content_md.replace(/(?<!\])\((https?:\/\/[^\s)]+)\)/g, '(<$1>)')}
                                         </ReactMarkdown>
                                     </div>
                                 </div>
