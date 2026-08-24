@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { api } from '../../../services/api';
+import StructuredDataViewer from './StructuredDataViewer';
 
 type ExperimentTab = 'overview' | 'results' | 'artifacts' | 'logs';
 
@@ -179,7 +180,10 @@ const ExperimentIDE = () => {
                 {!isLoading && !error && selectedFile && selectedExtension === 'md' && (
                     <article className="experiment-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{fileContent}</ReactMarkdown></article>
                 )}
-                {!isLoading && !error && selectedFile && selectedExtension !== 'md' && (
+                {!isLoading && !error && selectedFile && (selectedExtension === 'json' || selectedExtension === 'csv') && (
+                    <StructuredDataViewer content={fileContent} type={selectedExtension} />
+                )}
+                {!isLoading && !error && selectedFile && !['md', 'json', 'csv'].includes(selectedExtension ?? '') && (
                     <pre className="experiment-code">{fileContent}</pre>
                 )}
             </main>

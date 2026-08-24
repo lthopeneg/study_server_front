@@ -5,9 +5,14 @@
 }
 
 .research-notes-sidebar {
+    position: sticky;
+    top: 130px;
     width: 164px;
+    height: calc(100vh - 130px);
     flex: 0 0 164px;
+    align-self: flex-start;
     padding: 1.25rem 0.75rem;
+    overflow-y: auto;
     background: #ffffff;
     border-right: 1px solid #e2e8f0;
     box-sizing: border-box;
@@ -457,6 +462,121 @@
     color: #b91c1c;
 }
 
+.structured-data {
+    padding: 1.5rem;
+    color: #334155;
+}
+
+.structured-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.structured-summary-grid > div {
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.structured-summary-grid span {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.structured-summary-grid strong {
+    color: #0f172a;
+    font-size: 1.05rem;
+    word-break: break-word;
+}
+
+.structured-section + .structured-section {
+    margin-top: 1.5rem;
+}
+
+.structured-section h2 {
+    margin: 0 0 0.75rem;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.structured-table-wrap {
+    max-height: 560px;
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.structured-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.structured-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.7rem 0.8rem;
+    color: #334155;
+    background: #f1f5f9;
+    border-bottom: 1px solid #cbd5e1;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.structured-table td {
+    max-width: 360px;
+    padding: 0.65rem 0.8rem;
+    border-bottom: 1px solid #e2e8f0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.structured-table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.structured-table tbody tr:hover {
+    background: #e0f2fe;
+}
+
+.structured-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.structured-chips span {
+    padding: 0.35rem 0.65rem;
+    color: #0369a1;
+    background: #e0f2fe;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.structured-error {
+    padding: 1.5rem;
+    color: #92400e;
+}
+
+.structured-error pre {
+    padding: 1rem;
+    overflow: auto;
+    color: #dbeafe;
+    background: #0f172a;
+    border-radius: 8px;
+    white-space: pre-wrap;
+}
+
 @media (max-width: 720px) {
     .research-notes-layout {
         flex-direction: column;
@@ -464,7 +584,9 @@
     }
 
     .research-notes-sidebar {
+        position: static;
         width: 100%;
+        height: auto;
         flex-basis: auto;
         padding: 0.75rem;
         border-right: 0;

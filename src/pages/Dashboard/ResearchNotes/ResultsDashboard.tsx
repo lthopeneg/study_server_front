@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { api } from '../../../services/api';
+import StructuredDataViewer from './StructuredDataViewer';
 
 type ResultTab = 'summary' | 'report' | 'evaluation' | 'artifacts';
 
@@ -152,7 +153,10 @@ const ResultsDashboard = () => {
                 {!isLoading && !error && selectedFile && extension === 'md' && (
                     <article className="results-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown></article>
                 )}
-                {!isLoading && !error && selectedFile && extension !== 'md' && <pre className="results-code">{content}</pre>}
+                {!isLoading && !error && selectedFile && (extension === 'json' || extension === 'csv') && (
+                    <StructuredDataViewer content={content} type={extension} />
+                )}
+                {!isLoading && !error && selectedFile && !['md', 'json', 'csv'].includes(extension ?? '') && <pre className="results-code">{content}</pre>}
             </main>
         </div>
     );
