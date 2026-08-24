@@ -4,6 +4,13 @@ import { api } from '../../../services/api';
 
 type ProblemType = 'line_selection' | 'secure_blank';
 
+export type GeneratedVariant = {
+    problem_type: ProblemType;
+    hint: string;
+    files: { filename: string; content: string }[];
+    answers: { filename: string; line: number; answer?: string }[];
+};
+
 type EditorFile = {
     id: string;
     filename: string;
@@ -23,6 +30,9 @@ type ProblemFileEditorProps = {
     majorTopic: string;
     minorTopic: string;
     difficulty: string;
+    initialVariants?: GeneratedVariant[];
+    creationMethod?: 'manual' | 'ai';
+    scenario?: string;
 };
 
 let editorFileSequence = 0;
@@ -51,12 +61,52 @@ const makeVariant = (language: 'Python' | 'C#'): VariantState => {
 
 const blankKey = (fileId: string, line: number) => `${fileId}:${line}`;
 
-const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: ProblemFileEditorProps) => {
-    const [activeType, setActiveType] = useState<ProblemType>('line_selection');
-    const [variants, setVariants] = useState<Record<ProblemType, VariantState>>(() => ({
+const hydrateVariants = (language: 'Python' | 'C#', generated?: GeneratedVariant[]): Record<ProblemType, VariantState> => {
+    const result: Record<ProblemType, VariantState> = {
         line_selection: makeVariant(language),
         secure_blank: makeVariant(language),
-    }));
+    };
+    if (!generated) return result;
+
+    generated.forEach((variant) => {
+        const files = variant.files.map((file) => ({ ...file, id: makeEditorFileId() }));
+        if (files.length === 0) return;
+        const fileIdByName = new Map(files.map((file) => [file.filename, file.id]));
+        const selectedLines: Record<string, number[]> = {};
+        const blankAnswers: Record<string, string> = {};
+        variant.answers.forEach((answer) => {
+            const fileId = fileIdByName.get(answer.filename);
+            if (!fileId) return;
+            if (variant.problem_type === 'line_selection') {
+                selectedLines[fileId] = [...(selectedLines[fileId] ?? []), answer.line].sort((a, b) => a - b);
+            } else {
+                blankAnswers[blankKey(fileId, answer.line)] = answer.answer ?? '';
+            }
+        });
+        result[variant.problem_type] = {
+            files,
+            activeFileId: files[0].id,
+            hint: variant.hint,
+            selectedLines,
+            blankAnswers,
+        };
+    });
+    return result;
+};
+
+const ProblemFileEditor = ({
+    language,
+    majorTopic,
+    minorTopic,
+    difficulty,
+    initialVariants,
+    creationMethod = 'manual',
+    scenario = '',
+}: ProblemFileEditorProps) => {
+    const [activeType, setActiveType] = useState<ProblemType>('line_selection');
+    const [variants, setVariants] = useState<Record<ProblemType, VariantState>>(
+        () => hydrateVariants(language, initialVariants),
+    );
     const [message, setMessage] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const currentVariant = variants[activeType];
@@ -125,11 +175,12 @@ const ProblemFileEditor = ({ language, majorTopic, minorTopic, difficulty }: Pro
         try {
             const payload = {
                 title: `${minorTopic || majorTopic || language} 문제`,
-                scenario: '',
+                scenario,
                 language,
                 major_topic: majorTopic,
                 minor_topic: minorTopic,
                 difficulty,
+                creation_method: creationMethod,
                 variants: (['line_selection', 'secure_blank'] as ProblemType[]).map((problemType) => {
                     const variant = variants[problemType];
                     const answers = problemType === 'line_selection'

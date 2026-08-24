@@ -392,6 +392,12 @@
     grid-template-columns: minmax(180px, 0.55fr) repeat(2, minmax(240px, 1fr));
 }
 
+.problem-create-grid.ai-settings label small {
+    color: #64748b;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
 .problem-create-grid .wide {
     grid-column: auto;
 }
