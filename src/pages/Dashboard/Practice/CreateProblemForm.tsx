@@ -138,7 +138,7 @@ const CreateProblemForm = () => {
                             disabled={!majorTopic || minorTopics.length === 0}
                         >
                             <option value="">
-                                {language === 'C#' ? 'C# 분류 준비 중' : majorTopic ? '선택' : '대주제를 먼저 선택하세요'}
+                                {majorTopic ? '선택' : '대주제를 먼저 선택하세요'}
                             </option>
                             {minorTopics.map((topic) => (
                                 <option key={topic} value={topic}>{topic}</option>

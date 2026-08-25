@@ -84,5 +84,5 @@ export const pythonTopicGroups: PracticeTopicGroup[] = [
 
 export const commonTopicGroups: PracticeTopicGroup[] = pythonTopicGroups.map((group) => ({
     title: group.title,
-    topics: [],
+    topics: [...group.topics],
 }));
