@@ -10,6 +10,8 @@ type ProblemListProps = {
 type PublishedProblem = {
     id: number;
     language: string;
+    runtime_platform: 'dotnet' | 'dotnet_framework' | null;
+    project_type: string | null;
     major_topic: string;
     minor_topic: string;
     difficulty: string;
@@ -147,6 +149,9 @@ const ProblemList = ({ language }: ProblemListProps) => {
                                 <span>문제 #{problem.id}</span>
                                 <h2>문제 #{problem.id}</h2>
                                 <p>{problem.major_topic} · {problem.minor_topic}</p>
+                                {problem.language === 'C#' && (
+                                    <small>{problem.runtime_platform ? (problem.runtime_platform === 'dotnet_framework' ? '.NET Framework' : '.NET') : '실행 환경 미지정'}</small>
+                                )}
                                 <small>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</small>
                             </Link>
                         </article>

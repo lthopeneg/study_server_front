@@ -5,6 +5,8 @@ import { api } from '../../../services/api';
 type ProblemSummary = {
     id: number;
     language: string;
+    runtime_platform: 'dotnet' | 'dotnet_framework' | null;
+    project_type: string | null;
     major_topic: string;
     minor_topic: string;
     difficulty: string;
@@ -17,6 +19,15 @@ const difficultyLabels: Record<string, string> = {
     beginner: '초급',
     intermediate: '중급',
     advanced: '고급',
+};
+
+const projectTypeLabels: Record<string, string> = {
+    auto: '자동',
+    console: 'Console',
+    aspnet_core_mvc: 'ASP.NET Core MVC',
+    aspnet_core_web_api: 'ASP.NET Core Web API',
+    aspnet_mvc5: 'ASP.NET MVC 5',
+    aspnet_web_api2: 'ASP.NET Web API 2',
 };
 
 const ProblemVisibilityManager = () => {
@@ -80,6 +91,7 @@ const ProblemVisibilityManager = () => {
                             <tr>
                                 <th>문제 번호</th>
                                 <th>언어</th>
+                                <th>실행 환경</th>
                                 <th>대주제</th>
                                 <th>소주제</th>
                                 <th>난이도</th>
@@ -104,6 +116,13 @@ const ProblemVisibilityManager = () => {
                                     >
                                         <td>#{problem.id}</td>
                                         <td>{problem.language}</td>
+                                        <td>
+                                            {problem.language === 'C#'
+                                                ? problem.runtime_platform
+                                                    ? `${problem.runtime_platform === 'dotnet_framework' ? '.NET Framework' : '.NET'} · ${projectTypeLabels[problem.project_type ?? ''] ?? '미지정'}`
+                                                    : '미지정'
+                                                : '-'}
+                                        </td>
                                         <td>{problem.major_topic}</td>
                                         <td>{problem.minor_topic}</td>
                                         <td>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</td>
