@@ -33,6 +33,7 @@ type ProblemFileEditorProps = {
     initialVariants?: GeneratedVariant[];
     creationMethod?: 'manual' | 'ai';
     scenario?: string;
+    problemId?: number;
 };
 
 let editorFileSequence = 0;
@@ -102,6 +103,7 @@ const ProblemFileEditor = ({
     initialVariants,
     creationMethod = 'manual',
     scenario = '',
+    problemId,
 }: ProblemFileEditorProps) => {
     const [activeType, setActiveType] = useState<ProblemType>('line_selection');
     const [variants, setVariants] = useState<Record<ProblemType, VariantState>>(
@@ -198,8 +200,13 @@ const ProblemFileEditor = ({
                     };
                 }),
             };
-            await api.post('/api/practice/problems', payload);
-            setMessage('문제 세트가 저장되었습니다. 활성화 전까지 비활성 상태로 유지됩니다.');
+            if (problemId) {
+                await api.put(`/api/practice/problems/${problemId}`, payload);
+                setMessage('문제 세트가 수정되었습니다. 기존 활성 상태는 유지됩니다.');
+            } else {
+                await api.post('/api/practice/problems', payload);
+                setMessage('문제 세트가 저장되었습니다. 활성화 전까지 비활성 상태로 유지됩니다.');
+            }
         } catch (error: unknown) {
             const responseMessage = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -244,6 +251,7 @@ const ProblemFileEditor = ({
                         <button
                             type="button"
                             key={file.id}
+                            title={file.filename || '이름 없는 파일'}
                             className={file.id === activeFile.id ? 'active' : ''}
                             onClick={() => updateCurrentVariant((variant) => ({ ...variant, activeFileId: file.id }))}
                         >
@@ -298,7 +306,7 @@ const ProblemFileEditor = ({
             <div className="problem-create-actions">
                 {message && <span className="problem-save-message">{message}</span>}
                 <button type="button" className="secondary" onClick={saveProblem} disabled={isSaving}>
-                    {isSaving ? '저장 중...' : '저장'}
+                    {isSaving ? '저장 중...' : problemId ? '수정 저장' : '저장'}
                 </button>
             </div>
         </section>
