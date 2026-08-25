@@ -111,7 +111,7 @@ const ProblemList = ({ language }: ProblemListProps) => {
                             disabled={!majorTopic || minorTopics.length === 0}
                         >
                             <option value="">
-                                {language === 'C#' ? 'C# 분류 준비 중' : majorTopic ? '전체' : '대주제를 먼저 선택하세요'}
+                                {majorTopic ? '전체' : '대주제를 먼저 선택하세요'}
                             </option>
                             {minorTopics.map((topic) => (
                                 <option key={topic} value={topic}>{topic}</option>
