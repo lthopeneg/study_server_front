@@ -271,7 +271,7 @@ const ProblemFileEditor = ({
 
                 <aside className="problem-answer-sidebar">
                     <label>
-                        <span>{activeType === 'line_selection' ? '1유형' : '2유형'} 공통 힌트</span>
+                        <span>{activeType === 'line_selection' ? '1유형' : '2유형'} 힌트</span>
                         <textarea
                             rows={6}
                             value={currentVariant.hint}

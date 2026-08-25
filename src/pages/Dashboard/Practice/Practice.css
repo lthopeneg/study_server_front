@@ -1172,7 +1172,14 @@
     gap: 1rem;
 }
 
-.problem-edit-heading > button {
+.problem-edit-heading-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.problem-edit-heading-actions button {
     padding: 0.5rem 0.7rem;
     color: #475569;
     background: #ffffff;
@@ -1180,6 +1187,17 @@
     border-radius: 7px;
     cursor: pointer;
     white-space: nowrap;
+}
+
+.problem-edit-heading-actions button.download {
+    color: #047857;
+    background: #ecfdf5;
+    border-color: #6ee7b7;
+}
+
+.problem-edit-heading-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
 }
 
 .problem-edit-heading span {
