@@ -141,6 +141,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
 }) => {
     const [minimumFiles, setMinimumFiles] = useState(3);
     const [referenceScope, setReferenceScope] = useState<'latest' | 'all'>('latest');
+    const [model, setModel] = useState<'gpt-5.6-luna' | 'gpt-5.6-terra' | 'gpt-5.6-sol'>('gpt-5.6-luna');
     const [scenario, setScenario] = useState('');
     const [extraRequest, setExtraRequest] = useState('');
     const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[] | null>(null);
@@ -163,6 +164,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 difficulty,
                 minimum_files: minimumFiles,
                 reference_scope: referenceScope,
+                model,
                 scenario,
                 extra_request: extraRequest,
             });
@@ -215,6 +217,17 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                     <option value="all">관련 연구노트 전체</option>
                 </select>
             </label>
+            <label>
+                <span>LLM 모델</span>
+                <select
+                    value={model}
+                    onChange={(event) => setModel(event.target.value as typeof model)}
+                >
+                    <option value="gpt-5.6-luna">GPT-5.6 Luna · 기본/빠른 처리</option>
+                    <option value="gpt-5.6-terra">GPT-5.6 Terra · 균형형</option>
+                    <option value="gpt-5.6-sol">GPT-5.6 Sol · 품질 우선</option>
+                </select>
+            </label>
             <label className="wide">
                 <span>문제 시나리오</span>
                 <textarea value={scenario} onChange={(event) => setScenario(event.target.value)} maxLength={5000} rows={5} placeholder="AI가 문제에 사용할 서비스 상황과 기능을 입력하세요" />
@@ -226,10 +239,6 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         </div>
 
         <div className="ai-generation-notice">
-            <div>
-                <strong>1유형 힌트 구성</strong>
-                <span>외부 입력의 유입 지점, 검증이 충분하지 않은 지점, 문제가 발생하는 최종 지점을 코드 흐름에 맞춰 안내합니다.</span>
-            </div>
             <div>
                 <strong>생성 결과는 바로 공개되지 않습니다.</strong>
                 <span>AI가 만든 두 유형을 미리보기에서 검토하고 수정한 뒤 등록합니다.</span>
