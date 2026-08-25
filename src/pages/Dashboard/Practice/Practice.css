@@ -974,6 +974,15 @@
     font-size: 0.76rem;
 }
 
+.problem-answer-panel li code {
+    display: block;
+    margin-top: 0.35rem;
+    overflow-wrap: anywhere;
+    color: #334155;
+    font-size: 0.7rem;
+    white-space: pre-wrap;
+}
+
 .blank-answer-list {
     display: flex;
     flex-direction: column;
