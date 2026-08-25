@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../../services/api';
 import { commonTopicGroups, pythonTopicGroups } from './practiceTopics';
 
@@ -142,10 +143,12 @@ const ProblemList = ({ language }: ProblemListProps) => {
                 <div className="published-problem-list">
                     {filteredProblems.map((problem) => (
                         <article key={problem.id}>
-                            <span>문제 #{problem.id}</span>
-                            <h2>문제 #{problem.id}</h2>
-                            <p>{problem.major_topic} · {problem.minor_topic}</p>
-                            <small>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</small>
+                            <Link to={`${problem.id}`} aria-label={`문제 ${problem.id} 풀기`}>
+                                <span>문제 #{problem.id}</span>
+                                <h2>문제 #{problem.id}</h2>
+                                <p>{problem.major_topic} · {problem.minor_topic}</p>
+                                <small>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</small>
+                            </Link>
                         </article>
                     ))}
                 </div>

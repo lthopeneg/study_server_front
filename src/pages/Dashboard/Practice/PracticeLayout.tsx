@@ -46,7 +46,12 @@ const PracticeLayout = () => {
     const renderMenu = (item: { title: string; path: string }) => (
         <Link
             key={item.path}
-            className={`practice-menu-item${location.pathname === item.path ? ' active' : ''}`}
+            className={`practice-menu-item${
+                location.pathname === item.path
+                || ((item.path.endsWith('/python') || item.path.endsWith('/csharp')) && location.pathname.startsWith(`${item.path}/`))
+                    ? ' active'
+                    : ''
+            }`}
             to={item.path}
         >
             {item.title}
