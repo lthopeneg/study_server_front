@@ -213,8 +213,7 @@ const ProblemSolver = () => {
                                 <p>{currentVariant.hint || '등록된 힌트가 없습니다.'}</p>
                             ) : (
                                 <div className="solver-hint-locked">
-                                    <span>힌트가 가려져 있습니다.</span>
-                                    <small>이 유형에서 한 번 이상 오답을 제출하면 확인할 수 있습니다.</small>
+                                    <span>한 번 이상 오답을 제출하면 힌트가 공개됩니다.</span>
                                 </div>
                             )}
                         </section>
