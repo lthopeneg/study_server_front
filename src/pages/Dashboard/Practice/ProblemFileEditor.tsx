@@ -8,7 +8,7 @@ export type GeneratedVariant = {
     problem_type: ProblemType;
     hint: string;
     files: { filename: string; content: string }[];
-    answers: { filename: string; line: number; answer?: string }[];
+    answers: { filename: string; line: number; code?: string; answer?: string; completed_line?: string }[];
 };
 
 type EditorFile = {
@@ -119,9 +119,19 @@ const ProblemFileEditor = ({
     };
 
     const updateActiveFile = (updates: Partial<EditorFile>) => {
+        const contentChanged = updates.content !== undefined && updates.content !== activeFile.content;
+        const clearSelectedLines = activeType === 'line_selection'
+            && contentChanged
+            && (currentVariant.selectedLines[activeFile.id]?.length ?? 0) > 0;
+        if (clearSelectedLines) {
+            setMessage('코드가 변경되어 현재 파일의 정답 라인을 초기화했습니다. 수정 후 다시 선택해주세요.');
+        }
         updateCurrentVariant((variant) => ({
             ...variant,
             files: variant.files.map((file) => file.id === activeFile.id ? { ...file, ...updates } : file),
+            selectedLines: clearSelectedLines
+                ? Object.fromEntries(Object.entries(variant.selectedLines).filter(([fileId]) => fileId !== activeFile.id))
+                : variant.selectedLines,
         }));
     };
 
@@ -389,7 +399,21 @@ const LineSelectionAnswers = ({ variant }: { variant: VariantState }) => {
         return lines.length > 0 ? [{ filename: file.filename, lines }] : [];
     });
     if (answers.length === 0) return <p>선택된 라인이 없습니다.</p>;
-    return <ul>{answers.map((answer) => <li key={answer.filename}><b>{answer.filename}</b> - {answer.lines.join(', ')}번 라인</li>)}</ul>;
+    return (
+        <ul>
+            {answers.map((answer) => {
+                const file = variant.files.find((item) => item.filename === answer.filename);
+                return (
+                    <li key={answer.filename}>
+                        <b>{answer.filename}</b> - {answer.lines.join(', ')}번 라인
+                        {answer.lines.map((line) => (
+                            <code key={line}>{line}: {file?.content.split('\n')[line - 1]?.trim() ?? ''}</code>
+                        ))}
+                    </li>
+                );
+            })}
+        </ul>
+    );
 };
 
 const BlankAnswers = ({ locations, answers, onChange }: {
