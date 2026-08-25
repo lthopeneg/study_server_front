@@ -419,6 +419,32 @@
     white-space: pre-wrap;
 }
 
+.solver-hint-locked {
+    display: flex;
+    min-height: 120px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding: 1rem;
+    color: #64748b;
+    background: repeating-linear-gradient(-45deg, #f8fafc, #f8fafc 8px, #f1f5f9 8px, #f1f5f9 16px);
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.solver-hint-locked span {
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.solver-hint-locked small {
+    font-size: 0.7rem;
+    line-height: 1.5;
+}
+
 .problem-solver-sidebar ul {
     margin: 0.75rem 0 0;
     padding: 0;
@@ -1130,6 +1156,59 @@
     gap: 0.65rem;
 }
 
+.problem-manager-row-link {
+    cursor: pointer;
+}
+
+.problem-manager-row-link:hover,
+.problem-manager-row-link:focus-visible {
+    background: #ecfdf5;
+    outline: none;
+}
+
+.problem-edit-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.problem-edit-heading > button {
+    padding: 0.5rem 0.7rem;
+    color: #475569;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.problem-edit-heading span {
+    color: #059669;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.problem-edit-heading h1 {
+    margin: 0.25rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.problem-edit-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.problem-edit-metadata {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 1rem;
+}
+
+.problem-edit-metadata .wide {
+    grid-column: 1 / -1;
+}
+
 .problem-manager-status > span {
     min-width: 3.2rem;
     padding: 0.25rem 0.5rem;
@@ -1289,9 +1368,18 @@
     }
 
     .problem-solver-header,
-    .problem-solver-actions {
+    .problem-solver-actions,
+    .problem-edit-heading {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .problem-edit-metadata {
+        grid-template-columns: 1fr;
+    }
+
+    .problem-edit-metadata .wide {
+        grid-column: auto;
     }
 
     .problem-manager-guide,

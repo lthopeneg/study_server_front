@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../../services/api';
 
 type ProblemSummary = {
@@ -19,6 +20,7 @@ const difficultyLabels: Record<string, string> = {
 };
 
 const ProblemVisibilityManager = () => {
+    const navigate = useNavigate();
     const [problems, setProblems] = useState<ProblemSummary[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [changingId, setChangingId] = useState<number | null>(null);
@@ -88,14 +90,25 @@ const ProblemVisibilityManager = () => {
                             {problems.map((problem) => {
                                 const isPublished = problem.status === 'published';
                                 return (
-                                    <tr key={problem.id}>
+                                    <tr
+                                        key={problem.id}
+                                        className="problem-manager-row-link"
+                                        tabIndex={0}
+                                        onClick={() => navigate(`/practice/manage/edit/${problem.id}`)}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                navigate(`/practice/manage/edit/${problem.id}`);
+                                            }
+                                        }}
+                                    >
                                         <td>#{problem.id}</td>
                                         <td>{problem.language}</td>
                                         <td>{problem.major_topic}</td>
                                         <td>{problem.minor_topic}</td>
                                         <td>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</td>
                                         <td>
-                                            <div className="problem-manager-status">
+                                            <div className="problem-manager-status" onClick={(event) => event.stopPropagation()}>
                                                 <span className={isPublished ? 'published' : 'draft'}>{isPublished ? '활성' : '비활성'}</span>
                                                 <label className="visibility-switch">
                                                     <input

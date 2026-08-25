@@ -59,6 +59,7 @@ const ProblemSolver = () => {
     const [selectedLines, setSelectedLines] = useState<Record<string, number[]>>({});
     const [blankAnswers, setBlankAnswers] = useState<Record<string, string>>({});
     const [result, setResult] = useState<GradeResult | null>(null);
+    const [unlockedHints, setUnlockedHints] = useState<Set<ProblemType>>(() => new Set());
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,7 +138,12 @@ const ProblemSolver = () => {
                     },
                 ],
             });
-            setResult(response.data.data);
+            const gradeResult = response.data.data as GradeResult;
+            setResult(gradeResult);
+            setUnlockedHints((current) => new Set([
+                ...current,
+                ...gradeResult.variants.filter((variant) => !variant.correct).map((variant) => variant.problem_type),
+            ]));
         } catch (error: unknown) {
             const responseMessage = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -183,6 +189,7 @@ const ProblemSolver = () => {
                             <button
                                 type="button"
                                 key={file.filename}
+                                title={file.filename}
                                 className={file.filename === currentFile.filename ? 'active' : ''}
                                 onClick={() => setActiveFiles((current) => ({ ...current, [activeType]: file.filename }))}
                             >
@@ -202,7 +209,14 @@ const ProblemSolver = () => {
                     <aside className="problem-solver-sidebar">
                         <section>
                             <strong>힌트</strong>
-                            <p>{currentVariant.hint || '등록된 힌트가 없습니다.'}</p>
+                            {unlockedHints.has(activeType) ? (
+                                <p>{currentVariant.hint || '등록된 힌트가 없습니다.'}</p>
+                            ) : (
+                                <div className="solver-hint-locked">
+                                    <span>힌트가 가려져 있습니다.</span>
+                                    <small>이 유형에서 한 번 이상 오답을 제출하면 확인할 수 있습니다.</small>
+                                </div>
+                            )}
                         </section>
                         <section>
                             <strong>{activeType === 'line_selection' ? '선택한 라인' : '빈칸 정답'}</strong>

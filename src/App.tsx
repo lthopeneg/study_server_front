@@ -15,6 +15,7 @@ import PracticeLayout from './pages/Dashboard/Practice/PracticeLayout';
 import ProblemList from './pages/Dashboard/Practice/ProblemList';
 import ProblemManagement from './pages/Dashboard/Practice/ProblemManagement';
 import ProblemSolver from './pages/Dashboard/Practice/ProblemSolver';
+import ProblemEditPage from './pages/Dashboard/Practice/ProblemEditPage';
 import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
 
@@ -79,6 +80,7 @@ function App() {
             <Route path="csharp/:problemId" element={<ProblemSolver />} />
             <Route path="manage/create" element={<ProblemManagement mode="create" />} />
             <Route path="manage/edit" element={<ProblemManagement mode="edit" />} />
+            <Route path="manage/edit/:problemId" element={<ProblemEditPage />} />
             <Route path="manage/delete" element={<ProblemManagement mode="delete" />} />
             <Route path="*" element={<Navigate to="python" replace />} />
           </Route>
