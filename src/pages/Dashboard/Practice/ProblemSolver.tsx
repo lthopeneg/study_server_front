@@ -20,6 +20,8 @@ type ProblemVariant = {
 type ProblemDetail = {
     id: number;
     language: 'Python' | 'C#';
+    runtime_platform: 'dotnet' | 'dotnet_framework' | null;
+    project_type: string | null;
     major_topic: string;
     minor_topic: string;
     difficulty: string;
@@ -164,7 +166,10 @@ const ProblemSolver = () => {
             <header className="problem-solver-header">
                 <button type="button" onClick={() => navigate(-1)}>← 목록으로</button>
                 <div>
-                    <span>문제 #{problem.id} · {difficultyLabels[problem.difficulty] ?? problem.difficulty}</span>
+                    <span>
+                        문제 #{problem.id} · {difficultyLabels[problem.difficulty] ?? problem.difficulty}
+                        {problem.language === 'C#' && ` · ${problem.runtime_platform ? (problem.runtime_platform === 'dotnet_framework' ? '.NET Framework' : '.NET') : '실행 환경 미지정'}`}
+                    </span>
                     <h1>{problem.major_topic} · {problem.minor_topic}</h1>
                     {problem.scenario && <p>{problem.scenario}</p>}
                 </div>

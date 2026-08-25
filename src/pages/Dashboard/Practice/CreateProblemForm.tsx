@@ -5,10 +5,29 @@ import { api } from '../../../services/api';
 
 type CreationMethod = 'manual' | 'ai';
 type PracticeLanguage = 'Python' | 'C#';
+type RuntimePlatform = 'dotnet' | 'dotnet_framework';
+type ProjectType = 'auto' | 'console' | 'aspnet_core_mvc' | 'aspnet_core_web_api' | 'aspnet_mvc5' | 'aspnet_web_api2';
+
+const projectTypeOptions: Record<RuntimePlatform, { value: ProjectType; label: string }[]> = {
+    dotnet: [
+        { value: 'auto', label: '자동 선택' },
+        { value: 'console', label: 'Console' },
+        { value: 'aspnet_core_mvc', label: 'ASP.NET Core MVC' },
+        { value: 'aspnet_core_web_api', label: 'ASP.NET Core Web API' },
+    ],
+    dotnet_framework: [
+        { value: 'auto', label: '자동 선택' },
+        { value: 'console', label: 'Console' },
+        { value: 'aspnet_mvc5', label: 'ASP.NET MVC 5' },
+        { value: 'aspnet_web_api2', label: 'ASP.NET Web API 2' },
+    ],
+};
 
 const CreateProblemForm = () => {
     const [method, setMethod] = useState<CreationMethod>('manual');
     const [language, setLanguage] = useState<PracticeLanguage>('Python');
+    const [runtimePlatform, setRuntimePlatform] = useState<RuntimePlatform>('dotnet');
+    const [projectType, setProjectType] = useState<ProjectType>('auto');
     const [majorTopic, setMajorTopic] = useState('');
     const [minorTopic, setMinorTopic] = useState('');
     const [difficulty, setDifficulty] = useState('beginner');
@@ -28,6 +47,11 @@ const CreateProblemForm = () => {
     const changeMajorTopic = (value: string) => {
         setMajorTopic(value);
         setMinorTopic('');
+    };
+
+    const changeRuntimePlatform = (value: RuntimePlatform) => {
+        setRuntimePlatform(value);
+        setProjectType('auto');
     };
 
     return (
@@ -78,6 +102,25 @@ const CreateProblemForm = () => {
                             <option value="C#">C#</option>
                         </select>
                     </label>
+                    {language === 'C#' && (
+                        <>
+                            <label>
+                                <span>실행 환경</span>
+                                <select value={runtimePlatform} onChange={(event) => changeRuntimePlatform(event.target.value as RuntimePlatform)}>
+                                    <option value="dotnet">.NET</option>
+                                    <option value="dotnet_framework">.NET Framework</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>프로젝트 유형</span>
+                                <select value={projectType} onChange={(event) => setProjectType(event.target.value as ProjectType)}>
+                                    {projectTypeOptions[runtimePlatform].map((option) => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
+                                </select>
+                            </label>
+                        </>
+                    )}
                     <label>
                         <span>대주제</span>
                         <select value={majorTopic} onChange={(event) => changeMajorTopic(event.target.value)}>
@@ -117,6 +160,8 @@ const CreateProblemForm = () => {
                 <ProblemFileEditor
                     key={language}
                     language={language}
+                    runtimePlatform={language === 'C#' ? runtimePlatform : null}
+                    projectType={language === 'C#' ? projectType : null}
                     majorTopic={majorTopic}
                     minorTopic={minorTopic}
                     difficulty={difficulty}
@@ -124,6 +169,8 @@ const CreateProblemForm = () => {
             ) : (
                 <AiCreationFields
                     language={language}
+                    runtimePlatform={language === 'C#' ? runtimePlatform : null}
+                    projectType={language === 'C#' ? projectType : null}
                     majorTopic={majorTopic}
                     minorTopic={minorTopic}
                     difficulty={difficulty}
@@ -133,8 +180,10 @@ const CreateProblemForm = () => {
     );
 };
 
-const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
+const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, minorTopic, difficulty }: {
     language: PracticeLanguage;
+    runtimePlatform: RuntimePlatform | null;
+    projectType: ProjectType | null;
     majorTopic: string;
     minorTopic: string;
     difficulty: string;
@@ -159,6 +208,8 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         try {
             const response = await api.post('/api/practice/problems/generate', {
                 language,
+                runtime_platform: runtimePlatform,
+                project_type: projectType,
                 major_topic: majorTopic,
                 minor_topic: minorTopic,
                 difficulty,
@@ -260,6 +311,8 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             <ProblemFileEditor
                 key={`ai-${generationKey}`}
                 language={language}
+                runtimePlatform={runtimePlatform}
+                projectType={projectType}
                 majorTopic={majorTopic}
                 minorTopic={minorTopic}
                 difficulty={difficulty}

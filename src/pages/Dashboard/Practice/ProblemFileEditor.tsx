@@ -27,6 +27,8 @@ type VariantState = {
 
 type ProblemFileEditorProps = {
     language: 'Python' | 'C#';
+    runtimePlatform?: 'dotnet' | 'dotnet_framework' | null;
+    projectType?: string | null;
     majorTopic: string;
     minorTopic: string;
     difficulty: string;
@@ -97,6 +99,8 @@ const hydrateVariants = (language: 'Python' | 'C#', generated?: GeneratedVariant
 
 const ProblemFileEditor = ({
     language,
+    runtimePlatform = null,
+    projectType = null,
     majorTopic,
     minorTopic,
     difficulty,
@@ -189,6 +193,8 @@ const ProblemFileEditor = ({
                 title: `${minorTopic || majorTopic || language} 문제`,
                 scenario,
                 language,
+                runtime_platform: language === 'C#' ? runtimePlatform : null,
+                project_type: language === 'C#' ? projectType : null,
                 major_topic: majorTopic,
                 minor_topic: minorTopic,
                 difficulty,
