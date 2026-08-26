@@ -635,6 +635,19 @@
     line-height: 1.45;
 }
 
+.ai-runtime-summary {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.75rem;
+    color: #166534;
+    background: #f0fdf4;
+}
+
 .problem-create-grid .wide {
     grid-column: auto;
 }
