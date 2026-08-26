@@ -186,6 +186,10 @@ const ProblemFileEditor = ({
     ), [currentVariant.files]);
 
     const saveProblem = async () => {
+        if (language === 'C#' && (!runtimePlatform || !projectType)) {
+            setMessage('C# 실행 환경과 프로젝트 유형을 선택해주세요.');
+            return;
+        }
         setMessage('');
         setIsSaving(true);
         try {

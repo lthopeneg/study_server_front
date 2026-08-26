@@ -6,17 +6,15 @@ import { api } from '../../../services/api';
 type CreationMethod = 'manual' | 'ai';
 type PracticeLanguage = 'Python' | 'C#';
 type RuntimePlatform = 'dotnet' | 'dotnet_framework';
-type ProjectType = 'auto' | 'console' | 'aspnet_core_mvc' | 'aspnet_core_web_api' | 'aspnet_mvc5' | 'aspnet_web_api2';
+type ProjectType = 'console' | 'aspnet_core_mvc' | 'aspnet_core_web_api' | 'aspnet_mvc5' | 'aspnet_web_api2';
 
 const projectTypeOptions: Record<RuntimePlatform, { value: ProjectType; label: string }[]> = {
     dotnet: [
-        { value: 'auto', label: '자동 선택' },
         { value: 'console', label: 'Console' },
         { value: 'aspnet_core_mvc', label: 'ASP.NET Core MVC' },
         { value: 'aspnet_core_web_api', label: 'ASP.NET Core Web API' },
     ],
     dotnet_framework: [
-        { value: 'auto', label: '자동 선택' },
         { value: 'console', label: 'Console' },
         { value: 'aspnet_mvc5', label: 'ASP.NET MVC 5' },
         { value: 'aspnet_web_api2', label: 'ASP.NET Web API 2' },
@@ -26,8 +24,8 @@ const projectTypeOptions: Record<RuntimePlatform, { value: ProjectType; label: s
 const CreateProblemForm = () => {
     const [method, setMethod] = useState<CreationMethod>('manual');
     const [language, setLanguage] = useState<PracticeLanguage>('Python');
-    const [runtimePlatform, setRuntimePlatform] = useState<RuntimePlatform>('dotnet');
-    const [projectType, setProjectType] = useState<ProjectType>('auto');
+    const [runtimePlatform, setRuntimePlatform] = useState<RuntimePlatform | ''>('');
+    const [projectType, setProjectType] = useState<ProjectType | ''>('');
     const [majorTopic, setMajorTopic] = useState('');
     const [minorTopic, setMinorTopic] = useState('');
     const [difficulty, setDifficulty] = useState('beginner');
@@ -49,9 +47,9 @@ const CreateProblemForm = () => {
         setMinorTopic('');
     };
 
-    const changeRuntimePlatform = (value: RuntimePlatform) => {
+    const changeRuntimePlatform = (value: RuntimePlatform | '') => {
         setRuntimePlatform(value);
-        setProjectType('auto');
+        setProjectType('');
     };
 
     return (
@@ -106,15 +104,17 @@ const CreateProblemForm = () => {
                         <>
                             <label>
                                 <span>실행 환경</span>
-                                <select value={runtimePlatform} onChange={(event) => changeRuntimePlatform(event.target.value as RuntimePlatform)}>
+                                <select value={runtimePlatform} onChange={(event) => changeRuntimePlatform(event.target.value as RuntimePlatform | '')}>
+                                    <option value="">선택</option>
                                     <option value="dotnet">.NET</option>
                                     <option value="dotnet_framework">.NET Framework</option>
                                 </select>
                             </label>
                             <label>
                                 <span>프로젝트 유형</span>
-                                <select value={projectType} onChange={(event) => setProjectType(event.target.value as ProjectType)}>
-                                    {projectTypeOptions[runtimePlatform].map((option) => (
+                                <select value={projectType} disabled={!runtimePlatform} onChange={(event) => setProjectType(event.target.value as ProjectType | '')}>
+                                    <option value="">{runtimePlatform ? '선택' : '실행 환경을 먼저 선택하세요'}</option>
+                                    {(runtimePlatform ? projectTypeOptions[runtimePlatform] : []).map((option) => (
                                         <option key={option.value} value={option.value}>{option.label}</option>
                                     ))}
                                 </select>
@@ -160,17 +160,18 @@ const CreateProblemForm = () => {
                 <ProblemFileEditor
                     key={language}
                     language={language}
-                    runtimePlatform={language === 'C#' ? runtimePlatform : null}
-                    projectType={language === 'C#' ? projectType : null}
+                    runtimePlatform={language === 'C#' ? runtimePlatform || null : null}
+                    projectType={language === 'C#' ? projectType || null : null}
                     majorTopic={majorTopic}
                     minorTopic={minorTopic}
                     difficulty={difficulty}
                 />
             ) : (
                 <AiCreationFields
+                    key={`ai-${language}-${runtimePlatform}-${projectType}`}
                     language={language}
-                    runtimePlatform={language === 'C#' ? runtimePlatform : null}
-                    projectType={language === 'C#' ? projectType : null}
+                    runtimePlatform={language === 'C#' ? runtimePlatform || null : null}
+                    projectType={language === 'C#' ? projectType || null : null}
                     majorTopic={majorTopic}
                     minorTopic={minorTopic}
                     difficulty={difficulty}
@@ -199,6 +200,16 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
     const [isGenerating, setIsGenerating] = useState(false);
 
     const generateProblem = async () => {
+        if (language === 'C#' && (!runtimePlatform || !projectType)) {
+            setMessage('C# 실행 환경과 프로젝트 유형을 선택해주세요.');
+            return;
+        }
+        const combinedRequest = `${scenario}\n${extraRequest}`.toLocaleLowerCase();
+        const requestsFramework = combinedRequest.includes('.net framework') || combinedRequest.includes('닷넷 프레임워크');
+        if (language === 'C#' && requestsFramework && runtimePlatform !== 'dotnet_framework') {
+            setMessage('시나리오에는 .NET Framework가 지정되어 있습니다. 실행 환경 선택을 확인해주세요.');
+            return;
+        }
         if (!majorTopic || !minorTopic) {
             setMessage('대주제와 소주제를 선택해주세요.');
             return;
@@ -244,6 +255,14 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
         </div>
 
         <div className="problem-create-grid ai-settings">
+            {language === 'C#' && runtimePlatform && projectType && (
+                <div className="wide ai-runtime-summary">
+                    <strong>생성 환경</strong>
+                    <span>
+                        C# · {runtimePlatform === 'dotnet_framework' ? '.NET Framework' : '.NET'} · {projectTypeOptions[runtimePlatform].find((option) => option.value === projectType)?.label}
+                    </span>
+                </div>
+            )}
             <label>
                 <span>유형별 최소 파일 수</span>
                 <input

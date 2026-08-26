@@ -24,8 +24,8 @@ const ProblemEditPage = () => {
     const { isAdmin, isRoleLoading } = useOutletContext<PracticeOutletContext>();
     const [problem, setProblem] = useState<EditableProblem | null>(null);
     const [language, setLanguage] = useState<'Python' | 'C#'>('Python');
-    const [runtimePlatform, setRuntimePlatform] = useState<'dotnet' | 'dotnet_framework'>('dotnet');
-    const [projectType, setProjectType] = useState('auto');
+    const [runtimePlatform, setRuntimePlatform] = useState<'dotnet' | 'dotnet_framework' | ''>('');
+    const [projectType, setProjectType] = useState('');
     const [majorTopic, setMajorTopic] = useState('');
     const [minorTopic, setMinorTopic] = useState('');
     const [difficulty, setDifficulty] = useState('beginner');
@@ -43,8 +43,8 @@ const ProblemEditPage = () => {
                 const detail = response.data.data as EditableProblem;
                 setProblem(detail);
                 setLanguage(detail.language);
-                setRuntimePlatform(detail.runtime_platform ?? 'dotnet');
-                setProjectType(detail.project_type ?? 'auto');
+                setRuntimePlatform(detail.runtime_platform ?? '');
+                setProjectType(detail.project_type === 'auto' ? '' : detail.project_type ?? '');
                 setMajorTopic(detail.major_topic);
                 setMinorTopic(detail.minor_topic);
                 setDifficulty(detail.difficulty);
@@ -118,29 +118,30 @@ const ProblemEditPage = () => {
                             <label>
                                 <span>실행 환경</span>
                                 <select value={runtimePlatform} onChange={(event) => {
-                                    setRuntimePlatform(event.target.value as 'dotnet' | 'dotnet_framework');
-                                    setProjectType('auto');
+                                    setRuntimePlatform(event.target.value as 'dotnet' | 'dotnet_framework' | '');
+                                    setProjectType('');
                                 }}>
+                                    <option value="">선택</option>
                                     <option value="dotnet">.NET</option>
                                     <option value="dotnet_framework">.NET Framework</option>
                                 </select>
                             </label>
                             <label>
                                 <span>프로젝트 유형</span>
-                                <select value={projectType} onChange={(event) => setProjectType(event.target.value)}>
-                                    <option value="auto">자동 선택</option>
+                                <select value={projectType} disabled={!runtimePlatform} onChange={(event) => setProjectType(event.target.value)}>
+                                    <option value="">{runtimePlatform ? '선택' : '실행 환경을 먼저 선택하세요'}</option>
                                     <option value="console">Console</option>
                                     {runtimePlatform === 'dotnet' ? (
                                         <>
                                             <option value="aspnet_core_mvc">ASP.NET Core MVC</option>
                                             <option value="aspnet_core_web_api">ASP.NET Core Web API</option>
                                         </>
-                                    ) : (
+                                    ) : runtimePlatform === 'dotnet_framework' ? (
                                         <>
                                             <option value="aspnet_mvc5">ASP.NET MVC 5</option>
                                             <option value="aspnet_web_api2">ASP.NET Web API 2</option>
                                         </>
-                                    )}
+                                    ) : null}
                                 </select>
                             </label>
                         </>
@@ -172,8 +173,8 @@ const ProblemEditPage = () => {
                 key={problem.id}
                 problemId={problem.id}
                 language={language}
-                runtimePlatform={language === 'C#' ? runtimePlatform : null}
-                projectType={language === 'C#' ? projectType : null}
+                runtimePlatform={language === 'C#' ? runtimePlatform || null : null}
+                projectType={language === 'C#' ? projectType || null : null}
                 majorTopic={majorTopic}
                 minorTopic={minorTopic}
                 difficulty={difficulty}
