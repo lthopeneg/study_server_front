@@ -1196,6 +1196,48 @@
     font-size: 0.82rem;
 }
 
+.problem-delete-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0.9rem;
+    color: #64748b;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.problem-delete-toolbar button,
+.problem-delete-button {
+    padding: 0.48rem 0.72rem;
+    color: #ffffff;
+    background: #e11d48;
+    border: 1px solid #e11d48;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.problem-delete-toolbar button:disabled,
+.problem-delete-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.problem-manager-table .problem-delete-check-cell {
+    width: 42px;
+    padding-right: 0.25rem;
+    padding-left: 0.75rem;
+    text-align: center;
+}
+
+.problem-manager-table tr.selected-for-delete td {
+    background: #fff1f2;
+}
+
 .problem-manager-list {
     display: flex;
     flex-direction: column;
