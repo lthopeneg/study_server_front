@@ -1135,6 +1135,103 @@
     font-family: Consolas, monospace;
 }
 
+.blank-answer-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.55rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+}
+
+.blank-answer-summary span {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.blank-answer-summary code {
+    overflow-wrap: anywhere;
+    color: #047857;
+    font-size: 0.76rem;
+}
+
+.practice-modal-backdrop {
+    position: fixed;
+    z-index: 1100;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(3px);
+}
+
+.practice-confirm-modal {
+    width: min(440px, 100%);
+    padding: 1.65rem;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #10b981;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+}
+
+.practice-confirm-modal-icon {
+    display: inline-flex;
+    width: 46px;
+    height: 46px;
+    align-items: center;
+    justify-content: center;
+    color: #047857;
+    background: #d1fae5;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    font-weight: 900;
+}
+
+.practice-confirm-modal h2 {
+    margin: 0.8rem 0 0.35rem;
+    color: #1e293b;
+    font-size: 1.2rem;
+}
+
+.practice-confirm-modal p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.practice-confirm-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+    margin-top: 1.2rem;
+}
+
+.practice-confirm-modal-actions button {
+    padding: 0.7rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.practice-confirm-modal-actions button.secondary {
+    color: #475569;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+}
+
+.practice-confirm-modal-actions button.primary {
+    color: #ffffff;
+    background: #059669;
+    border: 1px solid #059669;
+}
+
 .problem-editor-guide {
     padding: 0.7rem 1rem;
     color: #64748b;
