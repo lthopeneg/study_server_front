@@ -7,6 +7,7 @@ type CreationMethod = 'manual' | 'ai';
 type PracticeLanguage = 'Python' | 'C#';
 type RuntimePlatform = 'dotnet' | 'dotnet_framework';
 type ProjectType = 'console' | 'aspnet_core_mvc' | 'aspnet_core_web_api' | 'aspnet_mvc5' | 'aspnet_web_api2';
+type AiProjectType = ProjectType | 'auto';
 
 const projectTypeOptions: Record<RuntimePlatform, { value: ProjectType; label: string }[]> = {
     dotnet: [
@@ -25,7 +26,7 @@ const CreateProblemForm = () => {
     const [method, setMethod] = useState<CreationMethod>('manual');
     const [language, setLanguage] = useState<PracticeLanguage>('Python');
     const [runtimePlatform, setRuntimePlatform] = useState<RuntimePlatform | ''>('');
-    const [projectType, setProjectType] = useState<ProjectType | ''>('');
+    const [projectType, setProjectType] = useState<AiProjectType | ''>('');
     const [majorTopic, setMajorTopic] = useState('');
     const [minorTopic, setMinorTopic] = useState('');
     const [difficulty, setDifficulty] = useState('beginner');
@@ -67,7 +68,10 @@ const CreateProblemForm = () => {
                     <button
                         type="button"
                         className={method === 'manual' ? 'active' : ''}
-                        onClick={() => setMethod('manual')}
+                        onClick={() => {
+                            setMethod('manual');
+                            if (projectType === 'auto') setProjectType('');
+                        }}
                     >
                         <strong>직접 출제하기</strong>
                         <span>문제와 정답을 관리자가 직접 작성합니다.</span>
@@ -112,8 +116,11 @@ const CreateProblemForm = () => {
                             </label>
                             <label>
                                 <span>프로젝트 유형</span>
-                                <select value={projectType} disabled={!runtimePlatform} onChange={(event) => setProjectType(event.target.value as ProjectType | '')}>
+                                <select value={projectType} disabled={!runtimePlatform} onChange={(event) => setProjectType(event.target.value as AiProjectType | '')}>
                                     <option value="">{runtimePlatform ? '선택' : '실행 환경을 먼저 선택하세요'}</option>
+                                    {method === 'ai' && runtimePlatform === 'dotnet_framework' && (
+                                        <option value="auto">자동 선택 · MVC 5/Web API 2</option>
+                                    )}
                                     {(runtimePlatform ? projectTypeOptions[runtimePlatform] : []).map((option) => (
                                         <option key={option.value} value={option.value}>{option.label}</option>
                                     ))}
@@ -161,7 +168,7 @@ const CreateProblemForm = () => {
                     key={language}
                     language={language}
                     runtimePlatform={language === 'C#' ? runtimePlatform || null : null}
-                    projectType={language === 'C#' ? projectType || null : null}
+                    projectType={language === 'C#' ? projectType as AiProjectType || null : null}
                     majorTopic={majorTopic}
                     minorTopic={minorTopic}
                     difficulty={difficulty}
@@ -171,7 +178,7 @@ const CreateProblemForm = () => {
                     key={`ai-${language}-${runtimePlatform}-${projectType}`}
                     language={language}
                     runtimePlatform={language === 'C#' ? runtimePlatform || null : null}
-                    projectType={language === 'C#' ? projectType || null : null}
+                    projectType={language === 'C#' && projectType !== 'auto' ? projectType || null : null}
                     majorTopic={majorTopic}
                     minorTopic={minorTopic}
                     difficulty={difficulty}
@@ -184,7 +191,7 @@ const CreateProblemForm = () => {
 const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, minorTopic, difficulty }: {
     language: PracticeLanguage;
     runtimePlatform: RuntimePlatform | null;
-    projectType: ProjectType | null;
+    projectType: AiProjectType | null;
     majorTopic: string;
     minorTopic: string;
     difficulty: string;
@@ -196,6 +203,7 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
     const [scenario, setScenario] = useState('');
     const [extraRequest, setExtraRequest] = useState('');
     const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[] | null>(null);
+    const [resolvedProjectType, setResolvedProjectType] = useState<ProjectType | null>(null);
     const [generationKey, setGenerationKey] = useState(0);
     const [message, setMessage] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
@@ -233,6 +241,7 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
                 extra_request: extraRequest,
             });
             setGeneratedVariants(response.data.data.variants);
+            setResolvedProjectType(response.data.data.project_type ?? null);
             setGenerationKey((current) => current + 1);
             const warnings = response.data.data.warnings as string[] | undefined;
             setMessage(warnings?.length
@@ -264,7 +273,9 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
                 <div className="wide ai-runtime-summary">
                     <strong>생성 환경</strong>
                     <span>
-                        C# · {runtimePlatform === 'dotnet_framework' ? '.NET Framework' : '.NET'} · {projectTypeOptions[runtimePlatform].find((option) => option.value === projectType)?.label}
+                        C# · {runtimePlatform === 'dotnet_framework' ? '.NET Framework' : '.NET'} · {projectType === 'auto'
+                            ? '자동 선택 · MVC 5/Web API 2'
+                            : projectTypeOptions[runtimePlatform].find((option) => option.value === projectType)?.label}
                     </span>
                 </div>
             )}
@@ -353,7 +364,7 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
                 key={`ai-${generationKey}`}
                 language={language}
                 runtimePlatform={runtimePlatform}
-                projectType={projectType}
+                projectType={resolvedProjectType ?? (projectType === 'auto' ? null : projectType)}
                 majorTopic={majorTopic}
                 minorTopic={minorTopic}
                 difficulty={difficulty}
