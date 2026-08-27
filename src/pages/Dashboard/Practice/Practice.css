@@ -918,6 +918,121 @@
     background: #10b981;
 }
 
+.correct-problem-line {
+    background: rgba(16, 185, 129, 0.24);
+}
+
+.correct-problem-line-gutter {
+    width: 4px !important;
+    margin-left: 3px;
+    background: #10b981;
+}
+
+.wrong-problem-line {
+    background: rgba(244, 63, 94, 0.24);
+}
+
+.wrong-problem-line-gutter {
+    width: 4px !important;
+    margin-left: 3px;
+    background: #f43f5e;
+}
+
+.solver-result-modal-backdrop {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(3px);
+}
+
+.solver-result-modal {
+    width: min(420px, 100%);
+    padding: 1.6rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #10b981;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+    text-align: center;
+}
+
+.solver-result-modal.wrong {
+    border-top-color: #f43f5e;
+}
+
+.solver-result-icon {
+    display: inline-flex;
+    width: 46px;
+    height: 46px;
+    align-items: center;
+    justify-content: center;
+    color: #047857;
+    background: #d1fae5;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    font-weight: 900;
+}
+
+.solver-result-modal.wrong .solver-result-icon {
+    color: #be123c;
+    background: #ffe4e6;
+}
+
+.solver-result-modal h2 {
+    margin: 0.8rem 0 0.35rem;
+    color: #1e293b;
+    font-size: 1.25rem;
+}
+
+.solver-result-modal > p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.solver-result-modal ul {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1.1rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.solver-result-modal li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.65rem 0.8rem;
+    background: #f8fafc;
+    border-radius: 7px;
+    color: #475569;
+    font-size: 0.8rem;
+}
+
+.solver-result-modal li.correct strong {
+    color: #047857;
+}
+
+.solver-result-modal li.wrong strong {
+    color: #be123c;
+}
+
+.solver-result-modal > button {
+    width: 100%;
+    padding: 0.7rem;
+    color: #ffffff;
+    background: #0f172a;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
 .problem-answer-sidebar {
     display: grid;
     grid-template-rows: minmax(180px, 0.8fr) minmax(260px, 1.2fr);

@@ -65,6 +65,7 @@ const ProblemSolver = () => {
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchProblem = async () => {
@@ -106,6 +107,7 @@ const ProblemSolver = () => {
 
     const toggleLine = (filename: string, line: number) => {
         setResult(null);
+        setIsResultModalOpen(false);
         setSelectedLines((current) => {
             const lines = current[filename] ?? [];
             return {
@@ -142,6 +144,7 @@ const ProblemSolver = () => {
             });
             const gradeResult = response.data.data as GradeResult;
             setResult(gradeResult);
+            setIsResultModalOpen(true);
             setUnlockedHints((current) => new Set([
                 ...current,
                 ...gradeResult.variants.filter((variant) => !variant.correct).map((variant) => variant.problem_type),
@@ -208,6 +211,7 @@ const ProblemSolver = () => {
                         value={currentFile.content}
                         selectedLines={selectedLines[currentFile.filename] ?? []}
                         lineSelectable={activeType === 'line_selection'}
+                        lineResults={currentResult?.answers?.filter((item) => item.filename === currentFile.filename) ?? []}
                         onToggleLine={(line) => toggleLine(currentFile.filename, line)}
                     />
 
@@ -240,6 +244,7 @@ const ProblemSolver = () => {
                                                     value={blankAnswers[key] ?? ''}
                                                     onChange={(event) => {
                                                         setResult(null);
+                                                        setIsResultModalOpen(false);
                                                         setBlankAnswers((current) => ({ ...current, [key]: event.target.value }));
                                                     }}
                                                     placeholder="정답 입력"
@@ -267,6 +272,35 @@ const ProblemSolver = () => {
                     {isSubmitting ? '채점 중...' : '답안 제출'}
                 </button>
             </div>
+
+            {result && isResultModalOpen && (
+                <div className="solver-result-modal-backdrop" role="presentation" onMouseDown={() => setIsResultModalOpen(false)}>
+                    <section
+                        className={`solver-result-modal ${result.correct ? 'correct' : 'wrong'}`}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="solver-result-title"
+                        onMouseDown={(event) => event.stopPropagation()}
+                    >
+                        <span className="solver-result-icon" aria-hidden="true">{result.correct ? '✓' : '!'}</span>
+                        <h2 id="solver-result-title">{result.correct ? '정답입니다' : '오답이 있습니다'}</h2>
+                        <p>
+                            {result.correct
+                                ? '두 유형의 답을 모두 맞혔습니다.'
+                                : '선택한 라인의 색상과 유형별 결과를 확인한 뒤 다시 풀어보세요.'}
+                        </p>
+                        <ul>
+                            {result.variants.map((variant) => (
+                                <li key={variant.problem_type} className={variant.correct ? 'correct' : 'wrong'}>
+                                    <span>{variant.problem_type === 'line_selection' ? '1유형' : '2유형'}</span>
+                                    <strong>{variant.correct ? '정답' : '오답'}</strong>
+                                </li>
+                            ))}
+                        </ul>
+                        <button type="button" autoFocus onClick={() => setIsResultModalOpen(false)}>확인</button>
+                    </section>
+                </div>
+            )}
         </div>
     );
 };
@@ -283,11 +317,12 @@ const SelectedLineSummary = ({ files, selectedLines }: {
     return <ul>{selections.map((item) => <li key={item.filename}>{item.filename} · {item.lines.join(', ')}번</li>)}</ul>;
 };
 
-const SolutionCodeViewer = ({ language, value, selectedLines, lineSelectable, onToggleLine }: {
+const SolutionCodeViewer = ({ language, value, selectedLines, lineSelectable, lineResults, onToggleLine }: {
     language: 'Python' | 'C#';
     value: string;
     selectedLines: number[];
     lineSelectable: boolean;
+    lineResults: { line: number; correct: boolean }[];
     onToggleLine: (line: number) => void;
 }) => {
     const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
@@ -304,11 +339,20 @@ const SolutionCodeViewer = ({ language, value, selectedLines, lineSelectable, on
         const editor = editorRef.current;
         if (!editor) return;
         decorationRef.current?.clear();
-        decorationRef.current = editor.createDecorationsCollection(selectedLines.map((line) => ({
-            range: { startLineNumber: line, startColumn: 1, endLineNumber: line, endColumn: 1 },
-            options: { isWholeLine: true, className: 'selected-problem-line', linesDecorationsClassName: 'selected-problem-line-gutter' },
-        })));
-    }, [selectedLines]);
+        const resultByLine = new Map(lineResults.map((item) => [item.line, item.correct]));
+        decorationRef.current = editor.createDecorationsCollection(selectedLines.map((line) => {
+            const correctness = resultByLine.get(line);
+            const stateClass = correctness === undefined ? 'selected' : correctness ? 'correct' : 'wrong';
+            return {
+                range: { startLineNumber: line, startColumn: 1, endLineNumber: line, endColumn: 1 },
+                options: {
+                    isWholeLine: true,
+                    className: `${stateClass}-problem-line`,
+                    linesDecorationsClassName: `${stateClass}-problem-line-gutter`,
+                },
+            };
+        }));
+    }, [lineResults, selectedLines]);
 
     const handleMount: OnMount = (editor, monaco) => {
         editorRef.current = editor;
