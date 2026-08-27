@@ -2,6 +2,7 @@ import { useOutletContext } from 'react-router-dom';
 import type { PracticeOutletContext } from './PracticeLayout';
 import CreateProblemForm from './CreateProblemForm';
 import ProblemVisibilityManager from './ProblemVisibilityManager';
+import ProblemDeleteManager from './ProblemDeleteManager';
 
 type ManagementMode = 'create' | 'edit' | 'delete';
 
@@ -52,10 +53,7 @@ const ProblemManagement = ({ mode }: { mode: ManagementMode }) => {
             ) : mode === 'edit' ? (
                 <ProblemVisibilityManager />
             ) : (
-                <div className="practice-empty-state compact">
-                    <h2>관리 기능 준비 중</h2>
-                    <p>문제 데이터 구조와 API가 확정되면 이 영역에 실제 관리 도구를 연결합니다.</p>
-                </div>
+                <ProblemDeleteManager />
             )}
         </div>
     );
