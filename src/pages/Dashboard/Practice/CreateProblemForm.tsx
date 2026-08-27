@@ -190,6 +190,7 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
     difficulty: string;
 }) => {
     const [minimumFiles, setMinimumFiles] = useState(3);
+    const [targetBlankCount, setTargetBlankCount] = useState(3);
     const [referenceScope, setReferenceScope] = useState<'latest' | 'all'>('latest');
     const [model, setModel] = useState<'gpt-5.6-luna' | 'gpt-5.6-terra' | 'gpt-5.6-sol'>('gpt-5.6-luna');
     const [scenario, setScenario] = useState('');
@@ -225,6 +226,7 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
                 minor_topic: minorTopic,
                 difficulty,
                 minimum_files: minimumFiles,
+                target_blank_count: targetBlankCount,
                 reference_scope: referenceScope,
                 model,
                 scenario,
@@ -232,7 +234,10 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
             });
             setGeneratedVariants(response.data.data.variants);
             setGenerationKey((current) => current + 1);
-            setMessage('AI 초안이 생성되었습니다. 내용을 검토하고 수정한 뒤 저장해주세요.');
+            const warnings = response.data.data.warnings as string[] | undefined;
+            setMessage(warnings?.length
+                ? `AI 초안이 생성되었습니다. ${warnings.join(' ')}`
+                : 'AI 초안이 생성되었습니다. 내용을 검토하고 수정한 뒤 저장해주세요.');
         } catch (error: unknown) {
             const responseMessage = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -286,6 +291,23 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
                     <option value="latest">최신 연구노트</option>
                     <option value="all">관련 연구노트 전체</option>
                 </select>
+            </label>
+            <label>
+                <span>2유형 목표 빈칸 수</span>
+                <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={targetBlankCount}
+                    onChange={(event) => {
+                        const nextValue = Number(event.target.value);
+                        if (Number.isInteger(nextValue)) setTargetBlankCount(nextValue);
+                    }}
+                    onBlur={() => setTargetBlankCount((current) => Math.min(20, Math.max(1, current)))}
+                />
+                <small>
+                    의미 있는 빈칸 {targetBlankCount}개를 목표로 하며, 억지로 만들기 어려우면 더 적게 생성될 수 있습니다.
+                </small>
             </label>
             <label>
                 <span>LLM 모델</span>
