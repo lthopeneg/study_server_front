@@ -320,13 +320,13 @@ const AiCreationFields = ({ language, runtimePlatform, projectType, majorTopic, 
                     <option value="gpt-5.6-sol">GPT-5.6 Sol · 품질 우선</option>
                 </select>
             </label>
-            <label className="wide">
+            <label className="wide ai-prompt-field">
                 <span>문제 시나리오</span>
                 <textarea value={scenario} onChange={(event) => setScenario(event.target.value)} maxLength={5000} rows={5} placeholder="AI가 문제에 사용할 서비스 상황과 기능을 입력하세요" />
             </label>
-            <label className="wide">
+            <label className="wide ai-prompt-field">
                 <span>추가 요청사항</span>
-                <textarea value={extraRequest} onChange={(event) => setExtraRequest(event.target.value)} maxLength={5000} rows={4} placeholder="문제에 반영할 조건이 있으면 입력하세요" />
+                <textarea value={extraRequest} onChange={(event) => setExtraRequest(event.target.value)} maxLength={5000} rows={5} placeholder="문제에 반영할 조건이 있으면 입력하세요" />
             </label>
         </div>
 

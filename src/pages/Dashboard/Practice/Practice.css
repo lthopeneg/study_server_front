@@ -635,6 +635,13 @@
     line-height: 1.45;
 }
 
+.problem-create-grid.ai-settings .ai-prompt-field textarea {
+    height: 10rem;
+    min-height: 10rem;
+    max-height: 10rem;
+    resize: none;
+}
+
 .ai-runtime-summary {
     grid-column: 1 / -1;
     display: flex;
