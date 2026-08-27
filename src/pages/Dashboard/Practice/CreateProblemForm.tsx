@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { commonTopicGroups, pythonTopicGroups } from './practiceTopics';
 import ProblemFileEditor, { type GeneratedVariant } from './ProblemFileEditor';
 import { api } from '../../../services/api';
@@ -154,6 +154,13 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
     const [generationKey, setGenerationKey] = useState(0);
     const [message, setMessage] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isGeneratedModalOpen, setIsGeneratedModalOpen] = useState(false);
+    const generatedPreviewRef = useRef<HTMLDivElement | null>(null);
+
+    const showGeneratedPreview = () => {
+        setIsGeneratedModalOpen(false);
+        requestAnimationFrame(() => generatedPreviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    };
 
     const generateProblem = async () => {
         if (!majorTopic || !minorTopic) {
@@ -180,6 +187,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             setGeneratedVariants(response.data.data.variants);
             setResolvedProjectType(response.data.data.project_type ?? null);
             setGenerationKey((current) => current + 1);
+            setIsGeneratedModalOpen(true);
             const warnings = response.data.data.warnings as string[] | undefined;
             setMessage(warnings?.length
                 ? `AI 초안이 생성되었습니다. ${warnings.join(' ')}`
@@ -292,19 +300,40 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             </button>
         </div>
         </section>
+        {isGeneratedModalOpen && (
+            <div className="practice-modal-backdrop" role="presentation" onMouseDown={() => setIsGeneratedModalOpen(false)}>
+                <section
+                    className="practice-confirm-modal generated"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="generated-problem-modal-title"
+                    onMouseDown={(event) => event.stopPropagation()}
+                >
+                    <span className="practice-confirm-modal-icon" aria-hidden="true">✓</span>
+                    <h2 id="generated-problem-modal-title">문제 생성이 완료되었습니다</h2>
+                    <p>생성된 두 문제 유형의 코드, 힌트와 정답을 확인한 뒤 저장해주세요.</p>
+                    <div className="practice-confirm-modal-actions">
+                        <button type="button" className="secondary" onClick={() => setIsGeneratedModalOpen(false)}>닫기</button>
+                        <button type="button" className="primary" autoFocus onClick={showGeneratedPreview}>문제 확인하기</button>
+                    </div>
+                </section>
+            </div>
+        )}
         {generatedVariants && (
-            <ProblemFileEditor
-                key={`ai-${generationKey}`}
-                language={language}
-                runtimePlatform={language === 'C#' ? 'dotnet_framework' : null}
-                projectType={resolvedProjectType}
-                majorTopic={majorTopic}
-                minorTopic={minorTopic}
-                difficulty={difficulty}
-                initialVariants={generatedVariants}
-                creationMethod="ai"
-                scenario={scenario}
-            />
+            <div ref={generatedPreviewRef}>
+                <ProblemFileEditor
+                    key={`ai-${generationKey}`}
+                    language={language}
+                    runtimePlatform={language === 'C#' ? 'dotnet_framework' : null}
+                    projectType={resolvedProjectType}
+                    majorTopic={majorTopic}
+                    minorTopic={minorTopic}
+                    difficulty={difficulty}
+                    initialVariants={generatedVariants}
+                    creationMethod="ai"
+                    scenario={scenario}
+                />
+            </div>
         )}
         </>
     );
