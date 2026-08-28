@@ -222,12 +222,6 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         </div>
 
         <div className="problem-create-grid ai-settings">
-            {language === 'C#' && (
-                <div className="wide ai-runtime-summary">
-                    <strong>생성 환경</strong>
-                    <span>C# · .NET Framework · MVC 5/Web API 2 자동 선택</span>
-                </div>
-            )}
             <label>
                 <span>유형별 최소 파일 수</span>
                 <input
