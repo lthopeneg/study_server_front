@@ -626,7 +626,7 @@
 }
 
 .problem-create-grid.ai-settings {
-    grid-template-columns: minmax(180px, 0.55fr) repeat(2, minmax(240px, 1fr));
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .problem-create-grid.ai-settings label small {
