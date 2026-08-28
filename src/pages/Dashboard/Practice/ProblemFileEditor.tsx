@@ -67,32 +67,19 @@ const blankKey = (fileId: string, line: number) => `${fileId}:${line}`;
 
 const blankLineFromKey = (key: string) => Number(key.slice(key.lastIndexOf(':') + 1));
 
-const syncInlineBlankAnswers = (
+const syncBlankAnswers = (
     file: EditorFile,
     nextContent: string,
     currentAnswers: Record<string, string>,
 ) => {
-    const nextAnswers = { ...currentAnswers };
-    const previousLines = file.content.split('\n');
+    const nextAnswers = Object.fromEntries(
+        Object.entries(currentAnswers).filter(([key]) => !key.startsWith(`${file.id}:`)),
+    );
     const nextLines = nextContent.split('\n');
-    Object.entries(currentAnswers).forEach(([key, previousAnswer]) => {
-        if (!key.startsWith(`${file.id}:`)) return;
-        const line = blankLineFromKey(key);
-        const previousLine = previousLines[line - 1] ?? '';
-        const nextLine = nextLines[line - 1] ?? '';
-        const marker = previousLine.includes('____') ? '____' : previousAnswer;
-        if (!marker || !previousLine.includes(marker)) return;
-        const markerIndex = previousLine.indexOf(marker);
-        const prefix = previousLine.slice(0, markerIndex);
-        const suffix = previousLine.slice(markerIndex + marker.length);
-        if (nextLine.startsWith(prefix) && nextLine.endsWith(suffix)) {
-            nextAnswers[key] = nextLine.slice(prefix.length, nextLine.length - suffix.length).trim();
-        }
-    });
     nextLines.forEach((lineText, index) => {
         if (lineText.includes('____')) {
             const key = blankKey(file.id, index + 1);
-            if (!(key in nextAnswers)) nextAnswers[key] = '';
+            nextAnswers[key] = currentAnswers[key] ?? '';
         }
     });
     return nextAnswers;
@@ -119,12 +106,6 @@ const hydrateVariants = (language: 'Python' | 'C#', generated?: GeneratedVariant
             } else {
                 const answerText = answer.answer ?? '';
                 blankAnswers[blankKey(fileId, answer.line)] = answerText;
-                const targetFile = files.find((file) => file.id === fileId);
-                if (targetFile && answerText) {
-                    const lines = targetFile.content.split('\n');
-                    lines[answer.line - 1] = (lines[answer.line - 1] ?? '').replace('____', answerText);
-                    targetFile.content = lines.join('\n');
-                }
             }
         });
         result[variant.problem_type] = {
@@ -179,8 +160,15 @@ const ProblemFileEditor = ({
                 ? Object.fromEntries(Object.entries(variant.selectedLines).filter(([fileId]) => fileId !== activeFile.id))
                 : variant.selectedLines,
             blankAnswers: activeType === 'secure_blank' && contentChanged
-                ? syncInlineBlankAnswers(activeFile, updates.content ?? '', variant.blankAnswers)
+                ? syncBlankAnswers(activeFile, updates.content ?? '', variant.blankAnswers)
                 : variant.blankAnswers,
+        }));
+    };
+
+    const updateBlankAnswer = (key: string, answer: string) => {
+        updateCurrentVariant((variant) => ({
+            ...variant,
+            blankAnswers: { ...variant.blankAnswers, [key]: answer },
         }));
     };
 
@@ -235,17 +223,17 @@ const ProblemFileEditor = ({
         const secureVariant = variants.secure_blank;
         const secureAnswers = Object.entries(secureVariant.blankAnswers);
         if (!secureAnswers.length) {
-            setMessage('2유형 코드에 ____를 입력한 뒤 코드 편집기에서 정답으로 바꿔주세요.');
+            setMessage('2유형 코드에 ____를 입력한 뒤 우측 정답 입력칸에 정답을 작성해주세요.');
             return;
         }
-        const invalidInlineAnswer = secureAnswers.some(([key, answer]) => {
+        const invalidBlankAnswer = secureAnswers.some(([key, answer]) => {
             if (!answer.trim()) return true;
             const file = secureVariant.files.find((item) => key.startsWith(`${item.id}:`));
             const lineText = file?.content.split('\n')[blankLineFromKey(key) - 1] ?? '';
-            return lineText.split(answer.trim()).length - 1 !== 1;
+            return (lineText.match(/_{4,}/g) ?? []).length !== 1;
         });
-        if (invalidInlineAnswer) {
-            setMessage('2유형 정답은 등록한 라인의 코드 안에 정확히 한 번 포함되어야 합니다.');
+        if (invalidBlankAnswer) {
+            setMessage('2유형의 각 빈칸 라인에는 ____ 하나와 우측에 입력한 정답이 필요합니다.');
             return;
         }
         setMessage('');
@@ -269,16 +257,7 @@ const ProblemFileEditor = ({
                             const file = variant.files.find((item) => key.startsWith(`${item.id}:`));
                             return file ? [{ filename: file.filename, line: blankLineFromKey(key), answer: answer.trim() }] : [];
                         });
-                    const files = variant.files.map(({ id, filename, content }) => {
-                        if (problemType !== 'secure_blank') return { filename, content };
-                        const lines = content.split('\n');
-                        Object.entries(variant.blankAnswers).forEach(([key, answer]) => {
-                            if (!key.startsWith(`${id}:`)) return;
-                            const lineIndex = blankLineFromKey(key) - 1;
-                            lines[lineIndex] = (lines[lineIndex] ?? '').replace(answer.trim(), '____');
-                        });
-                        return { filename, content: lines.join('\n') };
-                    });
+                    const files = variant.files.map(({ filename, content }) => ({ filename, content }));
                     return {
                         problem_type: problemType,
                         hint: variant.hint,
@@ -374,6 +353,7 @@ const ProblemFileEditor = ({
                             <BlankAnswers
                                 locations={blankLocations}
                                 answers={currentVariant.blankAnswers}
+                                onChange={updateBlankAnswer}
                             />
                         )}
                     </div>
@@ -383,7 +363,7 @@ const ProblemFileEditor = ({
             <div className="problem-editor-guide">
                 {activeType === 'line_selection'
                     ? '코드 편집기 왼쪽의 라인 번호를 클릭하면 정답으로 선택하거나 해제할 수 있습니다.'
-                    : '코드에 언더바 4개(____)를 입력한 뒤, 그 밑줄을 지우고 정답을 코드에 직접 작성하세요.'}
+                    : '코드에는 언더바 4개(____)를 유지하고, 우측 정답 입력칸에 해당 빈칸의 정답을 작성하세요.'}
             </div>
 
             <div className="problem-create-actions">
@@ -494,9 +474,10 @@ const LineSelectionAnswers = ({ variant }: { variant: VariantState }) => {
     );
 };
 
-const BlankAnswers = ({ locations, answers }: {
+const BlankAnswers = ({ locations, answers, onChange }: {
     locations: { file: EditorFile; line: number }[];
     answers: Record<string, string>;
+    onChange: (key: string, answer: string) => void;
 }) => {
     if (locations.length === 0) return <p>코드에 ____를 입력하면 정답 위치로 등록됩니다.</p>;
     return (
@@ -506,7 +487,12 @@ const BlankAnswers = ({ locations, answers }: {
                 return (
                     <div className="blank-answer-summary" key={key}>
                         <span>{file.filename} - {line}번 라인 정답</span>
-                        <code>{answers[key] || '코드 편집기에서 ____를 정답으로 바꿔주세요.'}</code>
+                        <input
+                            value={answers[key] ?? ''}
+                            onChange={(event) => onChange(key, event.target.value)}
+                            placeholder="빈칸에 들어갈 정답 입력"
+                            aria-label={`${file.filename} ${line}번 라인 정답`}
+                        />
                     </div>
                 );
             })}
