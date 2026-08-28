@@ -9,6 +9,7 @@ type ProjectType = 'console' | 'aspnet_core_mvc' | 'aspnet_core_web_api' | 'aspn
 type QualityReport = {
     status: 'passed' | 'warning';
     repair_attempted: boolean;
+    score: number;
     checks: { key: string; label: string; status: 'passed' | 'warning'; message: string }[];
 };
 
@@ -296,7 +297,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             </div>
             <div>
                 <strong>API 사용량</strong>
-                <span>기본 생성 1회가 사용되며, 품질 검사 실패 시 자동 수정을 위해 API 요청이 1회 추가될 수 있습니다.</span>
+                <span>기본 생성과 독립 품질 검수로 API 요청 2회가 사용되며, 자동 수정이 필요하면 최대 3회까지 사용됩니다.</span>
             </div>
         </div>
 
@@ -337,7 +338,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                                     ? '초기 문제를 자동 수정한 뒤 다시 검사했습니다.'
                                     : '생성된 문제를 서버 규칙으로 검사했습니다.'}</span>
                             </div>
-                            <em>{qualityReport.status === 'passed' ? '통과' : '검토 필요'}</em>
+                            <em>{qualityReport.score}점 · {qualityReport.status === 'passed' ? '통과' : '검토 필요'}</em>
                         </div>
                         <ul>
                             {qualityReport.checks.map((check) => (
