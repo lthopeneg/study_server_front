@@ -6,6 +6,11 @@ import { api } from '../../../services/api';
 type CreationMethod = 'manual' | 'ai';
 type PracticeLanguage = 'Python' | 'C#';
 type ProjectType = 'console' | 'aspnet_core_mvc' | 'aspnet_core_web_api' | 'aspnet_mvc5' | 'aspnet_web_api2';
+type QualityReport = {
+    status: 'passed' | 'warning';
+    repair_attempted: boolean;
+    checks: { key: string; label: string; status: 'passed' | 'warning'; message: string }[];
+};
 
 const CreateProblemForm = () => {
     const [method, setMethod] = useState<CreationMethod>('manual');
@@ -151,6 +156,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
     const [extraRequest, setExtraRequest] = useState('');
     const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[] | null>(null);
     const [resolvedProjectType, setResolvedProjectType] = useState<ProjectType | null>(null);
+    const [qualityReport, setQualityReport] = useState<QualityReport | null>(null);
     const [generationKey, setGenerationKey] = useState(0);
     const [message, setMessage] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
@@ -186,6 +192,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             });
             setGeneratedVariants(response.data.data.variants);
             setResolvedProjectType(response.data.data.project_type ?? null);
+            setQualityReport(response.data.data.quality_report ?? null);
             setGenerationKey((current) => current + 1);
             setIsGeneratedModalOpen(true);
             const warnings = response.data.data.warnings as string[] | undefined;
@@ -289,7 +296,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             </div>
             <div>
                 <strong>API 사용량</strong>
-                <span>생성 버튼을 누를 때마다 선택한 연구노트와 생성 결과만큼 API 사용량이 발생합니다.</span>
+                <span>기본 생성 1회가 사용되며, 품질 검사 실패 시 자동 수정을 위해 API 요청이 1회 추가될 수 있습니다.</span>
             </div>
         </div>
 
@@ -321,6 +328,30 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         )}
         {generatedVariants && (
             <div ref={generatedPreviewRef}>
+                {qualityReport && (
+                    <section className={`problem-quality-report ${qualityReport.status}`}>
+                        <div className="problem-quality-report-heading">
+                            <div>
+                                <strong>AI 문제 품질 검사</strong>
+                                <span>{qualityReport.repair_attempted
+                                    ? '초기 문제를 자동 수정한 뒤 다시 검사했습니다.'
+                                    : '생성된 문제를 서버 규칙으로 검사했습니다.'}</span>
+                            </div>
+                            <em>{qualityReport.status === 'passed' ? '통과' : '검토 필요'}</em>
+                        </div>
+                        <ul>
+                            {qualityReport.checks.map((check) => (
+                                <li key={check.key} className={check.status}>
+                                    <span>{check.status === 'passed' ? '✓' : '!'}</span>
+                                    <div>
+                                        <strong>{check.label}</strong>
+                                        <small>{check.message}</small>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
                 <ProblemFileEditor
                     key={`ai-${generationKey}`}
                     language={language}

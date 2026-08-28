@@ -1232,6 +1232,112 @@
     border: 1px solid #059669;
 }
 
+.problem-quality-report {
+    margin-bottom: 1rem;
+    padding: 1rem 1.1rem;
+    background: #ffffff;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+}
+
+.problem-quality-report.warning {
+    border-color: #fde68a;
+}
+
+.problem-quality-report-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.problem-quality-report-heading > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.problem-quality-report-heading strong {
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.problem-quality-report-heading span {
+    color: #64748b;
+    font-size: 0.76rem;
+}
+
+.problem-quality-report-heading em {
+    padding: 0.25rem 0.5rem;
+    color: #047857;
+    background: #d1fae5;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-style: normal;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.problem-quality-report.warning .problem-quality-report-heading em {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.problem-quality-report ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.problem-quality-report li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    background: #f8fafc;
+    border-radius: 7px;
+}
+
+.problem-quality-report li > span {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    color: #047857;
+    background: #d1fae5;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.problem-quality-report li.warning > span {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.problem-quality-report li > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.18rem;
+}
+
+.problem-quality-report li strong {
+    color: #334155;
+    font-size: 0.76rem;
+}
+
+.problem-quality-report li small {
+    color: #64748b;
+    font-size: 0.7rem;
+    line-height: 1.45;
+}
+
 .problem-editor-guide {
     padding: 0.7rem 1rem;
     color: #64748b;
