@@ -161,12 +161,46 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
     const [generationKey, setGenerationKey] = useState(0);
     const [message, setMessage] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isDraftingScenario, setIsDraftingScenario] = useState(false);
     const [isGeneratedModalOpen, setIsGeneratedModalOpen] = useState(false);
     const generatedPreviewRef = useRef<HTMLDivElement | null>(null);
 
     const showGeneratedPreview = () => {
         setIsGeneratedModalOpen(false);
         requestAnimationFrame(() => generatedPreviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    };
+
+    const draftScenario = async () => {
+        if (!majorTopic || !minorTopic) {
+            setMessage('대주제와 소주제를 선택해주세요.');
+            return;
+        }
+        setMessage('');
+        setIsDraftingScenario(true);
+        try {
+            const response = await api.post('/api/practice/problems/generate-scenario', {
+                language,
+                major_topic: majorTopic,
+                minor_topic: minorTopic,
+                difficulty,
+                minimum_files: minimumFiles,
+                target_blank_count: targetBlankCount,
+                reference_scope: referenceScope,
+                model,
+                scenario,
+                extra_request: extraRequest,
+            });
+            setScenario(response.data.data.scenario);
+            setExtraRequest(response.data.data.extra_request);
+            setMessage('시나리오와 추가 요청사항을 작성했습니다. 내용을 확인한 뒤 문제를 생성해주세요.');
+        } catch (error: unknown) {
+            const responseMessage = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                : undefined;
+            setMessage(responseMessage ?? 'AI 시나리오를 작성하지 못했습니다.');
+        } finally {
+            setIsDraftingScenario(false);
+        }
     };
 
     const generateProblem = async () => {
@@ -222,12 +256,6 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         </div>
 
         <div className="problem-create-grid ai-settings">
-            {language === 'C#' && (
-                <div className="wide ai-runtime-summary">
-                    <strong>생성 환경</strong>
-                    <span>C# · .NET Framework · MVC 5/Web API 2 자동 선택</span>
-                </div>
-            )}
             <label>
                 <span>유형별 최소 파일 수</span>
                 <input
@@ -288,6 +316,19 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 <span>추가 요청사항</span>
                 <textarea value={extraRequest} onChange={(event) => setExtraRequest(event.target.value)} maxLength={5000} rows={5} placeholder="문제에 반영할 조건이 있으면 입력하세요" />
             </label>
+            <div className="wide ai-scenario-actions">
+                <small>비워두거나 `쇼핑몰 API`처럼 짧은 키워드만 입력해도 됩니다. AI 요청 1회가 사용됩니다.</small>
+                <button
+                    type="button"
+                    className="secondary"
+                    onClick={draftScenario}
+                    disabled={isDraftingScenario || isGenerating}
+                >
+                    {isDraftingScenario
+                        ? '시나리오 작성 중...'
+                        : scenario.trim() ? 'AI로 시나리오 확장' : 'AI로 시나리오 작성'}
+                </button>
+            </div>
         </div>
 
         <div className="ai-generation-notice">
@@ -303,7 +344,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
 
         <div className="problem-create-actions">
             {message && <span className="problem-save-message">{message}</span>}
-            <button type="button" className="primary" onClick={generateProblem} disabled={isGenerating}>
+            <button type="button" className="primary" onClick={generateProblem} disabled={isGenerating || isDraftingScenario}>
                 {isGenerating ? 'AI 생성 중...' : 'AI 문제 세트 생성'}
             </button>
         </div>

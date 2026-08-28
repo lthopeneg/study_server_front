@@ -642,17 +642,31 @@
     resize: none;
 }
 
-.ai-runtime-summary {
-    grid-column: 1 / -1;
+.ai-scenario-actions {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.8rem 1rem;
-    border: 1px solid #bbf7d0;
-    border-radius: 0.75rem;
-    color: #166534;
-    background: #f0fdf4;
+}
+
+.ai-scenario-actions small {
+    color: #64748b;
+    line-height: 1.45;
+}
+
+.ai-scenario-actions button {
+    flex: 0 0 auto;
+    padding: 0.65rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.65rem;
+    color: #334155;
+    background: #fff;
+    cursor: pointer;
+}
+
+.ai-scenario-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .problem-create-grid .wide {
