@@ -1165,10 +1165,20 @@
     font-weight: 700;
 }
 
-.blank-answer-summary code {
-    overflow-wrap: anywhere;
-    color: #047857;
-    font-size: 0.76rem;
+.blank-answer-summary input {
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-sizing: border-box;
+    background: #ffffff;
+    font: 0.78rem Consolas, monospace;
+}
+
+.blank-answer-summary input:focus {
+    border-color: #10b981;
+    outline: 2px solid rgba(16, 185, 129, 0.16);
 }
 
 .practice-modal-backdrop {
