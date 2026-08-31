@@ -12,6 +12,14 @@ type QualityReport = {
     score: number;
     checks: { key: string; label: string; status: 'passed' | 'warning'; message: string }[];
 };
+type FailedGeneration = {
+    draft: {
+        project_type?: ProjectType | null;
+        variants: GeneratedVariant[];
+    };
+    validation_error: string;
+    repair_attempted: boolean;
+};
 
 const CreateProblemForm = () => {
     const [method, setMethod] = useState<CreationMethod>('manual');
@@ -158,6 +166,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
     const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[] | null>(null);
     const [resolvedProjectType, setResolvedProjectType] = useState<ProjectType | null>(null);
     const [qualityReport, setQualityReport] = useState<QualityReport | null>(null);
+    const [failedGeneration, setFailedGeneration] = useState<FailedGeneration | null>(null);
     const [generationKey, setGenerationKey] = useState(0);
     const [message, setMessage] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
@@ -203,7 +212,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         }
     };
 
-    const generateProblem = async () => {
+    const generateProblem = async (failedDraft?: FailedGeneration) => {
         if (!majorTopic || !minorTopic) {
             setMessage('대주제와 소주제를 선택해주세요.');
             return;
@@ -224,10 +233,13 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 model,
                 scenario,
                 extra_request: extraRequest,
+                repair_draft: failedDraft?.draft,
+                repair_error: failedDraft?.validation_error,
             });
             setGeneratedVariants(response.data.data.variants);
             setResolvedProjectType(response.data.data.project_type ?? null);
             setQualityReport(response.data.data.quality_report ?? null);
+            setFailedGeneration(null);
             setGenerationKey((current) => current + 1);
             setIsGeneratedModalOpen(true);
             const warnings = response.data.data.warnings as string[] | undefined;
@@ -235,9 +247,41 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 ? `AI 초안이 생성되었습니다. ${warnings.join(' ')}`
                 : 'AI 초안이 생성되었습니다. 내용을 검토하고 수정한 뒤 저장해주세요.');
         } catch (error: unknown) {
-            const responseMessage = typeof error === 'object' && error !== null && 'response' in error
-                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+            const errorResponse = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as {
+                    response?: {
+                        data?: {
+                            message?: string;
+                            data?: {
+                                draft?: FailedGeneration['draft'] | null;
+                                validation_error?: string;
+                                repair_attempted?: boolean;
+                                can_retry_repair?: boolean;
+                            };
+                        };
+                    };
+                }).response?.data
                 : undefined;
+            const responseMessage = errorResponse?.message;
+            const failureData = errorResponse?.data;
+            if (
+                failureData?.can_retry_repair
+                && failureData.draft
+                && Array.isArray(failureData.draft.variants)
+                && failureData.validation_error
+            ) {
+                const failure: FailedGeneration = {
+                    draft: failureData.draft,
+                    validation_error: failureData.validation_error,
+                    repair_attempted: Boolean(failureData.repair_attempted),
+                };
+                setFailedGeneration(failure);
+                setGeneratedVariants(failure.draft.variants);
+                setResolvedProjectType(failure.draft.project_type ?? null);
+                setQualityReport(null);
+                setGenerationKey((current) => current + 1);
+                requestAnimationFrame(() => generatedPreviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+            }
             setMessage(responseMessage ?? 'AI 문제를 생성하지 못했습니다.');
         } finally {
             setIsGenerating(false);
@@ -317,7 +361,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 <textarea value={extraRequest} onChange={(event) => setExtraRequest(event.target.value)} maxLength={5000} rows={5} placeholder="문제에 반영할 조건이 있으면 입력하세요" />
             </label>
             <div className="wide ai-scenario-actions">
-                <small>비워두거나 `쇼핑몰 API`처럼 짧은 키워드만 입력해도 됩니다. AI 요청 1회가 사용됩니다.</small>
+                <small>비워두거나 짧은 업무 키워드만 입력해도 됩니다. AI 요청 1회가 사용됩니다.</small>
                 <button
                     type="button"
                     className="secondary"
@@ -344,8 +388,8 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
 
         <div className="problem-create-actions">
             {message && <span className="problem-save-message">{message}</span>}
-            <button type="button" className="primary" onClick={generateProblem} disabled={isGenerating || isDraftingScenario}>
-                {isGenerating ? 'AI 생성 중...' : 'AI 문제 세트 생성'}
+            <button type="button" className="primary" onClick={() => generateProblem()} disabled={isGenerating || isDraftingScenario}>
+                {isGenerating ? 'AI 처리 중...' : 'AI 문제 세트 생성'}
             </button>
         </div>
         </section>
@@ -370,6 +414,38 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         )}
         {generatedVariants && (
             <div ref={generatedPreviewRef}>
+                {failedGeneration && (
+                    <section className="problem-quality-report warning">
+                        <div className="problem-quality-report-heading">
+                            <div>
+                                <strong>생성 결과 검토 필요</strong>
+                                <span>
+                                    마지막 AI 초안을 보존했습니다. 아래에서 직접 수정하거나 이 초안만 다시 자동 수정할 수 있습니다.
+                                </span>
+                            </div>
+                            <em>검증 실패</em>
+                        </div>
+                        <ul>
+                            <li className="warning">
+                                <span>!</span>
+                                <div>
+                                    <strong>실패 원인</strong>
+                                    <small>{failedGeneration.validation_error}</small>
+                                </div>
+                            </li>
+                        </ul>
+                        <div className="problem-create-actions">
+                            <button
+                                type="button"
+                                className="secondary"
+                                onClick={() => generateProblem(failedGeneration)}
+                                disabled={isGenerating || isDraftingScenario}
+                            >
+                                {isGenerating ? '초안 수정 중...' : '이 초안 자동 수정'}
+                            </button>
+                        </div>
+                    </section>
+                )}
                 {qualityReport && (
                     <section className={`problem-quality-report ${qualityReport.status}`}>
                         <div className="problem-quality-report-heading">
