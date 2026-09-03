@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import { api } from './services/api';
@@ -32,26 +33,59 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [authError, setAuthError] = useState(false);
+  const [authAttempt, setAuthAttempt] = useState(0);
   const login = useAuthStore((state) => state.login);
+  const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
+    const controller = new AbortController();
     const verifyToken = async () => {
       try {
-        const response = await api.get('/api/check-auth');
-        if (response.data.status === 'success') {
-          login(response.data.username, response.data.expires_at);
+        const response = await api.get('/api/check-auth', {
+          timeout: 10_000,
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted) return;
+        if (response.data.status !== 'success' || typeof response.data.username !== 'string'
+          || typeof response.data.expires_at !== 'number') {
+          throw new Error('Invalid authentication response');
         }
-      } catch {
-        console.log("세션 만료 또는 로그인되지 않음");
+        login(response.data.username, response.data.expires_at);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        // JWT 누락·만료·유효하지 않은 토큰만 비로그인으로 처리합니다.
+        if (axios.isAxiosError(error) && [401, 422].includes(error.response?.status ?? 0)) {
+          logout();
+        } else {
+          setAuthError(true);
+        }
       } finally {
-        setIsCheckingAuth(false);
+        if (!controller.signal.aborted) setIsCheckingAuth(false);
       }
     };
     verifyToken();
-  }, [login]);
+    return () => controller.abort();
+  }, [login, logout, authAttempt]);
 
   if (isCheckingAuth) {
     return <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>보안 인증 확인 중...</div>;
+  }
+
+  if (authError) {
+    return (
+      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
+        <section role="alert" style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: 22 }}>서버에 연결할 수 없습니다.</h1>
+          <p>인증 확인이 지연되거나 실패했습니다. 잠시 후 다시 시도해 주세요.</p>
+          <button type="button" onClick={() => {
+            setAuthError(false);
+            setIsCheckingAuth(true);
+            setAuthAttempt((attempt) => attempt + 1);
+          }}>다시 시도</button>
+        </section>
+      </main>
+    );
   }
 
   return (
