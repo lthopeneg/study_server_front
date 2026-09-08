@@ -9,3 +9,194 @@ html,
   background-color: #f8fafc;
   /* 앱 전체 기본 배경을 옅은 회색으로 둡니다 */
 }
+
+.auth-status-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif;
+  color: #172554;
+  background:
+    radial-gradient(circle at 18% 15%, rgba(59, 130, 246, 0.14), transparent 28%),
+    radial-gradient(circle at 85% 82%, rgba(132, 204, 22, 0.12), transparent 25%),
+    linear-gradient(145deg, #f8fbff 0%, #eef5fb 100%);
+}
+
+.auth-status-page::before,
+.auth-status-page::after {
+  position: fixed;
+  width: 260px;
+  height: 260px;
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.auth-status-page::before {
+  top: -130px;
+  right: -70px;
+}
+
+.auth-status-page::after {
+  bottom: -160px;
+  left: -90px;
+}
+
+.auth-status-card {
+  position: relative;
+  width: min(100%, 420px);
+  box-sizing: border-box;
+  padding: 46px 42px 38px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(30, 64, 175, 0.13);
+  backdrop-filter: blur(12px);
+}
+
+.auth-status-card::before {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 72px;
+  height: 4px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, #3b82f6, #84cc16);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.auth-status-logo {
+  width: 180px;
+  height: 76px;
+  margin-bottom: 24px;
+  object-fit: contain;
+}
+
+.auth-status-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.auth-status-icon--error {
+  color: #dc2626;
+  background: #fff1f2;
+}
+
+.auth-status-icon svg {
+  width: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.auth-status-spinner {
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 3px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: auth-status-spin 0.8s linear infinite;
+}
+
+.auth-status-card h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.auth-status-card p {
+  margin: 12px 0 26px;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.auth-status-retry {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: #2563eb;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.auth-status-retry:hover {
+  background: #1d4ed8;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
+}
+
+.auth-status-retry:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.3);
+  outline-offset: 3px;
+}
+
+.auth-status-retry svg {
+  width: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.auth-status-help {
+  display: block;
+  margin-top: 18px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@keyframes auth-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .auth-status-card {
+    padding: 38px 24px 30px;
+  }
+
+  .auth-status-logo {
+    width: 158px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-status-spinner {
+    animation-duration: 1.6s;
+  }
+
+  .auth-status-retry {
+    transition: none;
+  }
+}
