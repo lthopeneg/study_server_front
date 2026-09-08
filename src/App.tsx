@@ -19,6 +19,7 @@ import ProblemSolver from './pages/Dashboard/Practice/ProblemSolver';
 import ProblemEditPage from './pages/Dashboard/Practice/ProblemEditPage';
 import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
+import logoImg from './assets/logo.png';
 
 import NotesLayout from './pages/Dashboard/ResearchNotes/NotesLayout';
 import ExperimentIDE from './pages/Dashboard/ResearchNotes/ExperimentIDE';
@@ -30,6 +31,50 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!username) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
+
+const AuthStatusScreen = ({
+  error = false,
+  onRetry,
+}: {
+  error?: boolean;
+  onRetry?: () => void;
+}) => (
+  <main className="auth-status-page">
+    <section className="auth-status-card" role={error ? 'alert' : 'status'} aria-live="polite">
+      <img className="auth-status-logo" src={logoImg} alt="SECURECODE SPACE" />
+
+      <div className={`auth-status-icon${error ? ' auth-status-icon--error' : ''}`} aria-hidden="true">
+        {error ? (
+          <svg viewBox="0 0 24 24">
+            <path d="M12 8v5m0 3.25v.01M10.3 4.53 3.36 16.5A2 2 0 0 0 5.09 19.5h13.82a2 2 0 0 0 1.73-3L13.7 4.53a1.96 1.96 0 0 0-3.4 0Z" />
+          </svg>
+        ) : (
+          <span className="auth-status-spinner" />
+        )}
+      </div>
+
+      <h1>{error ? '서버 연결이 원활하지 않습니다' : '보안 인증 확인 중'}</h1>
+      <p>
+        {error
+          ? '서버 응답이 지연되고 있습니다. 잠시 후 다시 연결해 주세요.'
+          : '안전한 접속을 위해 로그인 상태를 확인하고 있습니다.'}
+      </p>
+
+      {error && onRetry && (
+        <button className="auth-status-retry" type="button" onClick={onRetry}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11a8.1 8.1 0 1 0 2 5.3M20 4v7h-7" />
+          </svg>
+          다시 연결하기
+        </button>
+      )}
+
+      <span className="auth-status-help">
+        문제가 계속되면 잠시 후 페이지를 새로고침해 주세요.
+      </span>
+    </section>
+  </main>
+);
 
 function App() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -69,22 +114,19 @@ function App() {
   }, [login, logout, authAttempt]);
 
   if (isCheckingAuth) {
-    return <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>보안 인증 확인 중...</div>;
+    return <AuthStatusScreen />;
   }
 
   if (authError) {
     return (
-      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
-        <section role="alert" style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 22 }}>서버에 연결할 수 없습니다.</h1>
-          <p>인증 확인이 지연되거나 실패했습니다. 잠시 후 다시 시도해 주세요.</p>
-          <button type="button" onClick={() => {
+      <AuthStatusScreen
+        error
+        onRetry={() => {
             setAuthError(false);
             setIsCheckingAuth(true);
             setAuthAttempt((attempt) => attempt + 1);
-          }}>다시 시도</button>
-        </section>
-      </main>
+        }}
+      />
     );
   }
 
