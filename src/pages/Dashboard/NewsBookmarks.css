@@ -1,0 +1,18 @@
+.news-bookmark-page { display: grid; gap: 1rem; margin-top: 2rem; }
+.news-bookmark-page > header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem; background: white; border: 1px solid #e2e8f0; border-radius: 14px; }
+.news-bookmark-page h3 { margin: 0; color: #1e293b; }
+.news-bookmark-page header p { margin: .35rem 0 0; color: #64748b; }
+.news-bookmark-page header > strong { color: #b45309; }
+.bookmark-list { display: grid; gap: .8rem; }
+.bookmark-list article { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; padding: 1.2rem; background: white; border: 1px solid #e2e8f0; border-radius: 12px; }
+.bookmark-list a { color: inherit; text-decoration: none; }
+.bookmark-list a:hover h4 { color: #2563eb; }
+.bookmark-list h4 { margin: .45rem 0; color: #0f172a; line-height: 1.45; }
+.bookmark-list p { margin: 0; color: #64748b; font-size: .82rem; }
+.bookmark-kind { display: inline-block; padding: .2rem .5rem; color: #1d4ed8; background: #dbeafe; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+.bookmark-list button { padding: .55rem .8rem; color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; cursor: pointer; }
+.bookmark-list button:disabled { cursor: wait; opacity: .6; }
+.bookmark-status, .bookmark-error { padding: 2rem; text-align: center; background: white; border-radius: 12px; color: #64748b; }
+.bookmark-status p { margin: 0 0 .35rem; color: #334155; font-weight: 700; }
+.bookmark-error { padding: .8rem 1rem; color: #991b1b; background: #fee2e2; }
+@media (max-width: 640px) { .bookmark-list article { grid-template-columns: 1fr; } .bookmark-list button { justify-self: start; } }

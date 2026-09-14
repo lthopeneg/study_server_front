@@ -99,7 +99,7 @@ const LearningProgress = () => {
         <div className="learning-progress">
             <section className="progress-overview">
                 <div className="progress-summary-grid">
-                    <article><strong>{data.summary.completed_topics} / {data.summary.total_topics}</strong><span>완료한 소주제</span></article>
+                    <article><strong>{data.summary.completed_topics} / {data.summary.total_topics}</strong><span>완료한 보안 약점</span></article>
                     <article><strong>{data.summary.completed_problems}</strong><span>완료한 문제</span></article>
                     <article><strong>{data.summary.attempted_problems}</strong><span>도전한 문제</span></article>
                     <article><strong>{data.summary.total_attempts}</strong><span>전체 풀이 횟수</span></article>
@@ -108,7 +108,7 @@ const LearningProgress = () => {
 
             <section className="language-progress-section">
                 <div className="progress-section-heading">
-                    <div><h3>실습 진도</h3><p>언어를 선택해 대주제와 소주제별 완료 상태를 확인합니다.</p></div>
+                    <div><h3>실습 진도</h3><p>언어를 선택해 보안 영역과 세부 보안 약점별 완료 상태를 확인합니다.</p></div>
                     <span>문제 풀이</span>
                 </div>
                 <div className="language-progress-grid">
@@ -130,7 +130,7 @@ const LearningProgress = () => {
                                 </div>
                                 <div className="language-card-copy">
                                     <strong>{language}</strong>
-                                    <span>{stats.completed_topics} / {stats.total_topics}개 소주제 완료</span>
+                                    <span>{stats.completed_topics} / {stats.total_topics}개 보안 약점 완료</span>
                                     <small>{stats.attempted_problems}개 문제 도전 · {stats.completed_problems}개 문제 완료</small>
                                 </div>
                                 <span aria-hidden="true">{expandedLanguage === language ? '▲' : '▼'}</span>
@@ -144,7 +144,7 @@ const LearningProgress = () => {
                             <section key={major.name}>
                                 <header>
                                     <strong>{major.name}</strong>
-                                    <span>{major.completed_topics} / {major.total_topics} 소주제</span>
+                                    <span>{major.completed_topics} / {major.total_topics} 보안 약점</span>
                                 </header>
                                 <ul>
                                     {major.topics.map((topic) => (
@@ -185,7 +185,7 @@ const LearningProgress = () => {
                                             {attempt.language} · 1유형 {attempt.line_selection_correct ? '정답' : '오답'} · 2유형 {attempt.secure_blank_correct ? '정답' : '오답'}
                                         </small>
                                     </div>
-                                    <time>{attempt.attempted_at ? `${new Date(attempt.attempted_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST` : ''}</time>
+                                    <time>{attempt.attempted_at ? new Date(attempt.attempted_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : ''}</time>
                                 </>
                             );
                             return attempt.problem_available && attempt.problem_id ? (
