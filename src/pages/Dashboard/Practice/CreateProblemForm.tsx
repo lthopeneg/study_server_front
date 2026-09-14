@@ -170,9 +170,11 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
     const [generationKey, setGenerationKey] = useState(0);
     const [message, setMessage] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isCancellingGeneration, setIsCancellingGeneration] = useState(false);
     const [isDraftingScenario, setIsDraftingScenario] = useState(false);
     const [isGeneratedModalOpen, setIsGeneratedModalOpen] = useState(false);
     const generatedPreviewRef = useRef<HTMLDivElement | null>(null);
+    const generationRequestRef = useRef<{ id: string; controller: AbortController } | null>(null);
 
     const showGeneratedPreview = () => {
         setIsGeneratedModalOpen(false);
@@ -219,8 +221,12 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         }
         setMessage('');
         setIsGenerating(true);
+        const generationId = crypto.randomUUID();
+        const controller = new AbortController();
+        generationRequestRef.current = { id: generationId, controller };
         try {
             const response = await api.post('/api/practice/problems/generate', {
+                generation_id: generationId,
                 language,
                 runtime_platform: language === 'C#' ? 'dotnet_framework' : null,
                 project_type: language === 'C#' ? 'auto' : null,
@@ -235,6 +241,8 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 extra_request: extraRequest,
                 repair_draft: failedDraft?.draft,
                 repair_error: failedDraft?.validation_error,
+            }, {
+                signal: controller.signal,
             });
             setGeneratedVariants(response.data.data.variants);
             setResolvedProjectType(response.data.data.project_type ?? null);
@@ -247,6 +255,10 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 ? `AI 초안이 생성되었습니다. ${warnings.join(' ')}`
                 : 'AI 초안이 생성되었습니다. 내용을 검토하고 수정한 뒤 저장해주세요.');
         } catch (error: unknown) {
+            if (controller.signal.aborted) {
+                setMessage('AI 문제 생성을 취소했습니다.');
+                return;
+            }
             const errorResponse = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as {
                     response?: {
@@ -284,7 +296,29 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             }
             setMessage(responseMessage ?? 'AI 문제를 생성하지 못했습니다.');
         } finally {
+            if (generationRequestRef.current?.id === generationId) {
+                generationRequestRef.current = null;
+            }
             setIsGenerating(false);
+            setIsCancellingGeneration(false);
+        }
+    };
+
+    const cancelProblemGeneration = async () => {
+        const activeRequest = generationRequestRef.current;
+        if (!activeRequest || isCancellingGeneration) return;
+        setIsCancellingGeneration(true);
+        try {
+            await api.post(`/api/practice/problems/generate/${activeRequest.id}/cancel`);
+            setMessage('AI 문제 생성 취소를 요청했습니다.');
+            activeRequest.controller.abort();
+        } catch (error: unknown) {
+            const responseMessage = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                : undefined;
+            setMessage(responseMessage ?? '서버의 생성 작업 취소 여부를 확인하지 못했습니다.');
+        } finally {
+            setIsCancellingGeneration(false);
         }
     };
 
@@ -388,6 +422,16 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
 
         <div className="problem-create-actions">
             {message && <span className="problem-save-message">{message}</span>}
+            {isGenerating && (
+                <button
+                    type="button"
+                    className="secondary"
+                    onClick={cancelProblemGeneration}
+                    disabled={isCancellingGeneration}
+                >
+                    {isCancellingGeneration ? '취소 요청 중...' : '생성 취소'}
+                </button>
+            )}
             <button type="button" className="primary" onClick={() => generateProblem()} disabled={isGenerating || isDraftingScenario}>
                 {isGenerating ? 'AI 처리 중...' : 'AI 문제 세트 생성'}
             </button>
