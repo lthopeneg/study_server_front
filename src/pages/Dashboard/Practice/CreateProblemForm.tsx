@@ -21,6 +21,25 @@ type FailedGeneration = {
     repair_attempted: boolean;
 };
 
+const createGenerationId = () => {
+    if (typeof globalThis.crypto?.randomUUID === 'function') {
+        return globalThis.crypto.randomUUID();
+    }
+
+    const bytes = new Uint8Array(16);
+    if (typeof globalThis.crypto?.getRandomValues === 'function') {
+        globalThis.crypto.getRandomValues(bytes);
+    } else {
+        for (let index = 0; index < bytes.length; index += 1) {
+            bytes[index] = Math.floor(Math.random() * 256);
+        }
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+};
+
 const CreateProblemForm = () => {
     const [method, setMethod] = useState<CreationMethod>('manual');
     const [language, setLanguage] = useState<PracticeLanguage>('Python');
@@ -221,7 +240,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
         }
         setMessage('');
         setIsGenerating(true);
-        const generationId = crypto.randomUUID();
+        const generationId = createGenerationId();
         const controller = new AbortController();
         generationRequestRef.current = { id: generationId, controller };
         try {
@@ -306,7 +325,12 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
 
     const cancelProblemGeneration = async () => {
         const activeRequest = generationRequestRef.current;
-        if (!activeRequest || isCancellingGeneration) return;
+        if (isCancellingGeneration) return;
+        if (!activeRequest) {
+            setIsGenerating(false);
+            setMessage('생성 요청이 시작되지 않았습니다. 다시 시도해주세요.');
+            return;
+        }
         setIsCancellingGeneration(true);
         try {
             await api.post(`/api/practice/problems/generate/${activeRequest.id}/cancel`);
