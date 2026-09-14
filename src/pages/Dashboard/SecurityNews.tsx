@@ -21,9 +21,14 @@ interface DailyMain {
 }
 
 const SecurityNews = () => {
+    const [isAdmin, setIsAdmin] = useState(false);
     const [bookmarks, setBookmarks] = useState<Record<string, number>>({});
     const [bookmarkingKey, setBookmarkingKey] = useState('');
     const [bookmarkMessage, setBookmarkMessage] = useState('');
+    const [generationMessage, setGenerationMessage] = useState('');
+    const [selectedNewsForGeneration, setSelectedNewsForGeneration] = useState<NewsItem | null>(null);
+    const [generatingNewsId, setGeneratingNewsId] = useState<number | null>(null);
+    const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
     // 탭 상태 관리: 'main' (AI 메인 뉴스) 또는 'all' (전체 뉴스 리스트)
     const [activeTab, setActiveTab] = useState<'main' | 'all'>('main');
 
@@ -59,6 +64,18 @@ const SecurityNews = () => {
         loadBookmarks();
     }, []);
 
+    useEffect(() => {
+        const loadRole = async () => {
+            try {
+                const response = await api.get('/api/user/profile');
+                setIsAdmin(response.data.data?.role === 'ADMIN');
+            } catch {
+                setIsAdmin(false);
+            }
+        };
+        loadRole();
+    }, []);
+
     const toggleBookmark = async (itemType: 'security_news' | 'daily_main', newsId: number) => {
         const key = `${itemType}:${newsId}`;
         setBookmarkingKey(key);
@@ -83,6 +100,27 @@ const SecurityNews = () => {
         }
     };
 
+    const generateAiArticle = async () => {
+        if (!selectedNewsForGeneration) return;
+        const target = selectedNewsForGeneration;
+        setSelectedNewsForGeneration(null);
+        setGeneratingNewsId(target.id);
+        setGenerationMessage('AI 기사를 작성하고 있습니다. 잠시만 기다려주세요.');
+        try {
+            await api.post(`/api/news/${target.id}/generate-ai-article`);
+            setGenerationMessage('AI 기사 작성이 완료되었습니다. AI 메인 뉴스에서 확인할 수 있습니다.');
+            setHistoryPage(1);
+            setHistoryRefreshKey((value) => value + 1);
+        } catch (error: unknown) {
+            const responseMessage = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                : undefined;
+            setGenerationMessage(responseMessage ?? 'AI 기사를 작성하지 못했습니다.');
+        } finally {
+            setGeneratingNewsId(null);
+        }
+    };
+
     // [API] AI 뉴스 히스토리(목록) 가져오기
     useEffect(() => {
         if (activeTab === 'main' && aiViewMode === 'list') {
@@ -102,7 +140,7 @@ const SecurityNews = () => {
             };
             fetchAiHistory();
         }
-    }, [activeTab, aiViewMode, historyPage]);
+    }, [activeTab, aiViewMode, historyPage, historyRefreshKey]);
 
     // [API] 전체 일반 뉴스 가져오기
     useEffect(() => {
@@ -156,6 +194,7 @@ const SecurityNews = () => {
     return (
         <div style={{ padding: '1rem 2rem' }}>
             {bookmarkMessage && <div className="news-bookmark-message" role="alert">{bookmarkMessage}</div>}
+            {generationMessage && <div className="news-generation-message" role="status">{generationMessage}</div>}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '2rem' }}>
                 <div>
                     <h2 style={{ marginTop: 0, marginBottom: '0.5rem', color: '#1e293b' }}>📰 시큐어 보안 뉴스</h2>
@@ -226,14 +265,6 @@ const SecurityNews = () => {
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 justifyContent: 'space-between'
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.transform = 'translateY(-5px)';
-                                                e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.1)';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.transform = 'translateY(0)';
-                                                e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
                                             }}
                                         >
                                             <button
@@ -353,14 +384,6 @@ const SecurityNews = () => {
                                             color: 'inherit',
                                             transition: 'all 0.2s ease-in-out'
                                         }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(-3px)';
-                                            e.currentTarget.style.boxShadow = '0 6px 15px rgba(0,0,0,0.1)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
-                                        }}
                                     >
                                         <h3 style={{ marginTop: 0, marginBottom: '0.8rem', color: '#0f172a', fontSize: '1.1rem' }}>
                                             {item.title}
@@ -370,15 +393,27 @@ const SecurityNews = () => {
                                             <span>{item.pub_date}</span>
                                         </div>
                                     </a>
-                                    <button
-                                        type="button"
-                                        className={`news-bookmark-button ${bookmarks[`security_news:${item.id}`] ? 'active' : ''}`}
-                                        aria-label={bookmarks[`security_news:${item.id}`] ? '뉴스 스크랩 해제' : '뉴스 스크랩'}
-                                        disabled={bookmarkingKey === `security_news:${item.id}`}
-                                        onClick={() => void toggleBookmark('security_news', item.id)}
-                                    >
-                                        {bookmarks[`security_news:${item.id}`] ? '★' : '☆'}
-                                    </button>
+                                    <div className="news-item-actions">
+                                        {isAdmin && (
+                                            <button
+                                                type="button"
+                                                className="news-generate-button"
+                                                disabled={generatingNewsId !== null}
+                                                onClick={() => setSelectedNewsForGeneration(item)}
+                                            >
+                                                {generatingNewsId === item.id ? '작성 중...' : 'AI 기사로 작성하기'}
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className={`news-bookmark-button ${bookmarks[`security_news:${item.id}`] ? 'active' : ''}`}
+                                            aria-label={bookmarks[`security_news:${item.id}`] ? '뉴스 스크랩 해제' : '뉴스 스크랩'}
+                                            disabled={bookmarkingKey === `security_news:${item.id}`}
+                                            onClick={() => void toggleBookmark('security_news', item.id)}
+                                        >
+                                            {bookmarks[`security_news:${item.id}`] ? '★' : '☆'}
+                                        </button>
+                                    </div>
                                     </div>
                                 ))}
                             </div>
@@ -400,6 +435,20 @@ const SecurityNews = () => {
                             </div>
                         </>
                     )}
+                </div>
+            )}
+            {selectedNewsForGeneration && (
+                <div className="news-confirm-backdrop" role="presentation" onMouseDown={() => setSelectedNewsForGeneration(null)}>
+                    <section role="dialog" aria-modal="true" aria-labelledby="news-generate-title" onMouseDown={(event) => event.stopPropagation()}>
+                        <span className="news-confirm-icon" aria-hidden="true">AI</span>
+                        <h2 id="news-generate-title">AI 기사로 작성할까요?</h2>
+                        <p>선택한 원문을 분석해 새로운 AI 메인 뉴스를 작성합니다.</p>
+                        <strong>{selectedNewsForGeneration.title}</strong>
+                        <div>
+                            <button type="button" onClick={() => setSelectedNewsForGeneration(null)}>취소</button>
+                            <button type="button" className="confirm" autoFocus onClick={() => void generateAiArticle()}>작성 시작</button>
+                        </div>
+                    </section>
                 </div>
             )}
         </div>
