@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import ReactMarkdown from 'react-markdown';
+import './SecurityNews.css';
 
 interface NewsItem {
     id: number;
@@ -20,6 +21,9 @@ interface DailyMain {
 }
 
 const SecurityNews = () => {
+    const [bookmarks, setBookmarks] = useState<Record<string, number>>({});
+    const [bookmarkingKey, setBookmarkingKey] = useState('');
+    const [bookmarkMessage, setBookmarkMessage] = useState('');
     // 탭 상태 관리: 'main' (AI 메인 뉴스) 또는 'all' (전체 뉴스 리스트)
     const [activeTab, setActiveTab] = useState<'main' | 'all'>('main');
 
@@ -39,6 +43,45 @@ const SecurityNews = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [inputPage, setInputPage] = useState("");
+
+    useEffect(() => {
+        const loadBookmarks = async () => {
+            try {
+                const response = await api.get('/api/user/news-bookmarks');
+                const bookmarkMap = Object.fromEntries((response.data.data ?? []).map((item: { id: number; item_type: string; news_id: number }) => [
+                    `${item.item_type}:${item.news_id}`, item.id,
+                ]));
+                setBookmarks(bookmarkMap);
+            } catch {
+                setBookmarkMessage('스크랩 정보를 불러오지 못했습니다.');
+            }
+        };
+        loadBookmarks();
+    }, []);
+
+    const toggleBookmark = async (itemType: 'security_news' | 'daily_main', newsId: number) => {
+        const key = `${itemType}:${newsId}`;
+        setBookmarkingKey(key);
+        setBookmarkMessage('');
+        try {
+            const bookmarkId = bookmarks[key];
+            if (bookmarkId) {
+                await api.delete(`/api/user/news-bookmarks/${bookmarkId}`);
+                setBookmarks((current) => {
+                    const next = { ...current };
+                    delete next[key];
+                    return next;
+                });
+            } else {
+                const response = await api.post('/api/user/news-bookmarks', { item_type: itemType, news_id: newsId });
+                setBookmarks((current) => ({ ...current, [key]: response.data.data.id }));
+            }
+        } catch {
+            setBookmarkMessage('뉴스 스크랩을 변경하지 못했습니다.');
+        } finally {
+            setBookmarkingKey('');
+        }
+    };
 
     // [API] AI 뉴스 히스토리(목록) 가져오기
     useEffect(() => {
@@ -112,6 +155,7 @@ const SecurityNews = () => {
 
     return (
         <div style={{ padding: '1rem 2rem' }}>
+            {bookmarkMessage && <div className="news-bookmark-message" role="alert">{bookmarkMessage}</div>}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem', marginBottom: '2rem' }}>
                 <div>
                     <h2 style={{ marginTop: 0, marginBottom: '0.5rem', color: '#1e293b' }}>📰 시큐어 보안 뉴스</h2>
@@ -169,6 +213,7 @@ const SecurityNews = () => {
                                     {aiHistory.map((item) => (
                                         <div
                                             key={item.id}
+                                            className="ai-news-card"
                                             onClick={() => handleReadAiNews(item.id)}
                                             style={{
                                                 backgroundColor: 'white',
@@ -191,6 +236,15 @@ const SecurityNews = () => {
                                                 e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
                                             }}
                                         >
+                                            <button
+                                                type="button"
+                                                className={`news-bookmark-button ${bookmarks[`daily_main:${item.id}`] ? 'active' : ''}`}
+                                                aria-label={bookmarks[`daily_main:${item.id}`] ? 'AI 뉴스 스크랩 해제' : 'AI 뉴스 스크랩'}
+                                                disabled={bookmarkingKey === `daily_main:${item.id}`}
+                                                onClick={(event) => { event.stopPropagation(); void toggleBookmark('daily_main', item.id); }}
+                                            >
+                                                {bookmarks[`daily_main:${item.id}`] ? '★' : '☆'}
+                                            </button>
                                             <div>
                                                 <div style={{ fontSize: '0.85rem', color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.8rem', display: 'inline-block', padding: '0.2rem 0.6rem', backgroundColor: '#eff6ff', borderRadius: '4px' }}>
                                                     📅 {item.created_at} AI 보안 뉴스
@@ -243,6 +297,14 @@ const SecurityNews = () => {
                                 <div style={{ textAlign: 'center', color: '#64748b', padding: '4rem 0' }}>선택하신 뉴스를 불러오고 있습니다... 🚀</div>
                             ) : dailyMain ? (
                                 <div style={{ marginTop: '2rem' }}>
+                                    <button
+                                        type="button"
+                                        className={`news-detail-bookmark ${bookmarks[`daily_main:${dailyMain.id}`] ? 'active' : ''}`}
+                                        disabled={bookmarkingKey === `daily_main:${dailyMain.id}`}
+                                        onClick={() => void toggleBookmark('daily_main', dailyMain.id)}
+                                    >
+                                        {bookmarks[`daily_main:${dailyMain.id}`] ? '★ 스크랩됨' : '☆ 스크랩'}
+                                    </button>
                                     <div style={{ textAlign: 'center', marginBottom: '2rem', color: '#64748b', fontWeight: 'bold' }}>
                                         발행일: {dailyMain.created_at}
                                     </div>
@@ -276,8 +338,8 @@ const SecurityNews = () => {
                         <>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {news.map((item) => (
+                                    <div className="news-list-item" key={item.id}>
                                     <a
-                                        key={item.id}
                                         href={item.link}
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -308,6 +370,16 @@ const SecurityNews = () => {
                                             <span>{item.pub_date}</span>
                                         </div>
                                     </a>
+                                    <button
+                                        type="button"
+                                        className={`news-bookmark-button ${bookmarks[`security_news:${item.id}`] ? 'active' : ''}`}
+                                        aria-label={bookmarks[`security_news:${item.id}`] ? '뉴스 스크랩 해제' : '뉴스 스크랩'}
+                                        disabled={bookmarkingKey === `security_news:${item.id}`}
+                                        onClick={() => void toggleBookmark('security_news', item.id)}
+                                    >
+                                        {bookmarks[`security_news:${item.id}`] ? '★' : '☆'}
+                                    </button>
+                                    </div>
                                 ))}
                             </div>
 

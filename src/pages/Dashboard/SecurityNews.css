@@ -1,0 +1,9 @@
+.news-bookmark-message { position: sticky; top: 1rem; z-index: 5; margin-bottom: 1rem; padding: .75rem 1rem; color: #991b1b; background: #fee2e2; border-radius: 8px; }
+.news-list-item { position: relative; }
+.ai-news-card { position: relative; }
+.news-list-item > a { padding-right: 4rem !important; }
+.news-bookmark-button { position: absolute; top: 1rem; right: 1rem; z-index: 2; width: 38px; height: 38px; padding: 0; color: #64748b; background: white; border: 1px solid #cbd5e1; border-radius: 50%; font-size: 1.35rem; cursor: pointer; }
+.news-bookmark-button:hover, .news-bookmark-button.active { color: #d97706; border-color: #fbbf24; background: #fffbeb; }
+.news-bookmark-button:disabled { cursor: wait; opacity: .6; }
+.news-detail-bookmark { display: block; margin: 0 0 1rem auto; padding: .55rem .9rem; color: #475569; background: white; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; cursor: pointer; }
+.news-detail-bookmark.active { color: #b45309; border-color: #fbbf24; background: #fffbeb; }
