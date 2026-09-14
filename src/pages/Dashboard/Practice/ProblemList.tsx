@@ -17,6 +17,12 @@ type PublishedProblem = {
     difficulty: string;
 };
 
+type ProblemProgress = {
+    attempt_count: number;
+    completed: boolean;
+    last_attempted_at: string | null;
+};
+
 const difficultyLabels: Record<string, string> = {
     beginner: '초급',
     intermediate: '중급',
@@ -33,14 +39,22 @@ const ProblemList = ({ language }: ProblemListProps) => {
     const [problems, setProblems] = useState<PublishedProblem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
+    const [progress, setProgress] = useState<Record<string, ProblemProgress>>({});
 
     useEffect(() => {
         const fetchProblems = async () => {
             setIsLoading(true);
             setLoadError('');
             try {
-                const response = await api.get('/api/practice/public/problems', { params: { language } });
-                setProblems(response.data.data ?? []);
+                const [problemResponse, progressResponse] = await Promise.allSettled([
+                    api.get('/api/practice/public/problems', { params: { language } }),
+                    api.get('/api/user/learning-progress', { params: { language } }),
+                ]);
+                if (problemResponse.status === 'rejected') throw problemResponse.reason;
+                setProblems(problemResponse.value.data.data ?? []);
+                setProgress(progressResponse.status === 'fulfilled'
+                    ? progressResponse.value.data.data?.per_problem ?? {}
+                    : {});
             } catch {
                 setLoadError('문제 목록을 불러오지 못했습니다.');
             } finally {
@@ -147,12 +161,16 @@ const ProblemList = ({ language }: ProblemListProps) => {
                         <article key={problem.id}>
                             <Link to={`${problem.id}`} aria-label={`문제 ${problem.id} 풀기`}>
                                 <span>문제 #{problem.id}</span>
+                                <em className={`problem-progress-badge ${progress[problem.id]?.completed ? 'completed' : progress[problem.id] ? 'attempted' : ''}`}>
+                                    {progress[problem.id]?.completed ? '완료' : progress[problem.id] ? '풀이 중' : '미풀이'}
+                                </em>
                                 <h2>문제 #{problem.id}</h2>
                                 <p>{problem.major_topic} · {problem.minor_topic}</p>
                                 {problem.language === 'C#' && (
                                     <small>{problem.runtime_platform ? (problem.runtime_platform === 'dotnet_framework' ? '.NET Framework' : '.NET') : '실행 환경 미지정'}</small>
                                 )}
                                 <small>{difficultyLabels[problem.difficulty] ?? problem.difficulty}</small>
+                                {progress[problem.id] && <small>{progress[problem.id].attempt_count}회 도전</small>}
                             </Link>
                         </article>
                     ))}

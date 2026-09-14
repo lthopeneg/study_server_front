@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
+import LearningProgress from './LearningProgress';
 
 interface UserProfile {
     login_id: string;
@@ -11,12 +12,18 @@ interface UserProfile {
     created_at: string;
 }
 
+const getResponseMessage = (error: unknown) => (
+    typeof error === 'object' && error !== null && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined
+);
+
 const MyPage = () => {
     const { logout } = useAuthStore();
     const navigate = useNavigate();
 
     // 화면 상태 관리: 'menu'(기본 허브), 'verify'(비밀번호 확인창), 'edit'(정보 수정창)
-    const [viewMode, setViewMode] = useState<'menu' | 'verify' | 'edit'>('menu');
+    const [viewMode, setViewMode] = useState<'menu' | 'verify' | 'edit' | 'progress'>('menu');
 
     // [edit 화면용] 프로필 데이터 상태
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -68,12 +75,8 @@ const MyPage = () => {
                 setVerifyPassword('');
                 setViewMode('edit');
             }
-        } catch (error: any) {
-            if (error.response && error.response.data && error.response.data.message) {
-                setVerifyError(error.response.data.message);
-            } else {
-                setVerifyError("인증에 실패했습니다.");
-            }
+        } catch (error: unknown) {
+            setVerifyError(getResponseMessage(error) ?? "인증에 실패했습니다.");
         }
     };
 
@@ -107,17 +110,13 @@ const MyPage = () => {
                     navigate('/login');
                 }, 2000);
             }
-        } catch (error: any) {
-            if (error.response && error.response.data && error.response.data.message) {
-                setEditError(error.response.data.message);
-            } else {
-                setEditError("비밀번호 변경에 실패했습니다.");
-            }
+        } catch (error: unknown) {
+            setEditError(getResponseMessage(error) ?? "비밀번호 변경에 실패했습니다.");
         }
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
+        <div style={{ maxWidth: viewMode === 'progress' ? '1000px' : '600px', margin: '0 auto', padding: '2rem' }}>
             <h2 style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span>👤 마이페이지</span>
                 {viewMode !== 'menu' && (
@@ -156,14 +155,15 @@ const MyPage = () => {
                         <span style={{ fontSize: '1.5rem', color: '#94a3b8' }}>→</span>
                     </button>
 
-                    {/* 준비 중인 버튼들 (비활성화 느낌) */}
-                    <button disabled style={{ padding: '1.5rem', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', textAlign: 'left', cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0.7 }}>
+                    <button onClick={() => setViewMode('progress')} style={{ padding: '1.5rem', backgroundColor: 'white', border: '1px solid #cbd5e1', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#64748b', marginBottom: '0.3rem' }}>📈 나의 학습 진도 <span style={{ fontSize: '0.8rem', backgroundColor: '#e2e8f0', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem' }}>준비중</span></div>
-                            <div style={{ fontSize: '0.9rem', color: '#94a3b8' }}>완료한 퀴즈 및 학습 현황 보기</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1e293b', marginBottom: '0.3rem' }}>📈 나의 학습 진도</div>
+                            <div style={{ fontSize: '0.9rem', color: '#64748b' }}>완료한 문제와 최근 풀이 이력 보기</div>
                         </div>
+                        <span style={{ fontSize: '1.5rem', color: '#94a3b8' }}>→</span>
                     </button>
 
+                    {/* 준비 중인 버튼 */}
                     <button disabled style={{ padding: '1.5rem', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', textAlign: 'left', cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0.7 }}>
                         <div>
                             <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#64748b', marginBottom: '0.3rem' }}>⭐ 스크랩한 뉴스 <span style={{ fontSize: '0.8rem', backgroundColor: '#e2e8f0', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem' }}>준비중</span></div>
@@ -172,6 +172,8 @@ const MyPage = () => {
                     </button>
                 </div>
             )}
+
+            {viewMode === 'progress' && <LearningProgress />}
 
             {/* =========================================
                  [화면 2] 비밀번호 확인 창 (verify)
