@@ -9,6 +9,7 @@ interface NewsItem {
     link: string;
     pub_date: string;
     source: string;
+    ai_article_id: number | null;
 }
 
 interface DailyMain {
@@ -26,6 +27,7 @@ const SecurityNews = () => {
     const [bookmarkingKey, setBookmarkingKey] = useState('');
     const [bookmarkMessage, setBookmarkMessage] = useState('');
     const [generationMessage, setGenerationMessage] = useState('');
+    const [generationResult, setGenerationResult] = useState<{ articleId: number; title: string } | null>(null);
     const [selectedNewsForGeneration, setSelectedNewsForGeneration] = useState<NewsItem | null>(null);
     const [generatingNewsId, setGeneratingNewsId] = useState<number | null>(null);
     const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
@@ -107,8 +109,13 @@ const SecurityNews = () => {
         setGeneratingNewsId(target.id);
         setGenerationMessage('AI 기사를 작성하고 있습니다. 잠시만 기다려주세요.');
         try {
-            await api.post(`/api/news/${target.id}/generate-ai-article`);
-            setGenerationMessage('AI 기사 작성이 완료되었습니다. AI 메인 뉴스에서 확인할 수 있습니다.');
+            const response = await api.post(`/api/news/${target.id}/generate-ai-article`);
+            const articleId = response.data.data.id as number;
+            setGenerationMessage('');
+            setGenerationResult({ articleId, title: target.title });
+            setNews((current) => current.map((item) => (
+                item.id === target.id ? { ...item, ai_article_id: articleId } : item
+            )));
             setHistoryPage(1);
             setHistoryRefreshKey((value) => value + 1);
         } catch (error: unknown) {
@@ -177,6 +184,12 @@ const SecurityNews = () => {
         } finally {
             setMainLoading(false);
         }
+    };
+
+    const openAiArticle = (id: number) => {
+        setGenerationResult(null);
+        setActiveTab('main');
+        void handleReadAiNews(id);
     };
 
     // 페이지네이션 함수들
@@ -395,14 +408,24 @@ const SecurityNews = () => {
                                     </a>
                                     <div className="news-item-actions">
                                         {isAdmin && (
-                                            <button
-                                                type="button"
-                                                className="news-generate-button"
-                                                disabled={generatingNewsId !== null}
-                                                onClick={() => setSelectedNewsForGeneration(item)}
-                                            >
-                                                {generatingNewsId === item.id ? '작성 중...' : 'AI 기사로 작성하기'}
-                                            </button>
+                                            item.ai_article_id ? (
+                                                <button
+                                                    type="button"
+                                                    className="news-generate-button existing"
+                                                    onClick={() => openAiArticle(item.ai_article_id as number)}
+                                                >
+                                                    AI 기사 보러가기
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="news-generate-button"
+                                                    disabled={generatingNewsId !== null}
+                                                    onClick={() => setSelectedNewsForGeneration(item)}
+                                                >
+                                                    {generatingNewsId === item.id ? '작성 중...' : 'AI 기사로 작성하기'}
+                                                </button>
+                                            )
                                         )}
                                         <button
                                             type="button"
@@ -447,6 +470,20 @@ const SecurityNews = () => {
                         <div>
                             <button type="button" onClick={() => setSelectedNewsForGeneration(null)}>취소</button>
                             <button type="button" className="confirm" autoFocus onClick={() => void generateAiArticle()}>작성 시작</button>
+                        </div>
+                    </section>
+                </div>
+            )}
+            {generationResult && (
+                <div className="news-confirm-backdrop" role="presentation" onMouseDown={() => setGenerationResult(null)}>
+                    <section role="dialog" aria-modal="true" aria-labelledby="news-generation-complete-title" onMouseDown={(event) => event.stopPropagation()}>
+                        <span className="news-confirm-icon complete" aria-hidden="true">✓</span>
+                        <h2 id="news-generation-complete-title">기사 작성 완료</h2>
+                        <p>기사 작성이 완료되었습니다. AI 메인 뉴스에서 확인할 수 있습니다.</p>
+                        <strong>{generationResult.title}</strong>
+                        <div>
+                            <button type="button" onClick={() => setGenerationResult(null)}>닫기</button>
+                            <button type="button" className="confirm" autoFocus onClick={() => openAiArticle(generationResult.articleId)}>기사 보러가기</button>
                         </div>
                     </section>
                 </div>
