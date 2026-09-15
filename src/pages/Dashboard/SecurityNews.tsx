@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../../services/api';
 import ReactMarkdown from 'react-markdown';
 import './SecurityNews.css';
@@ -21,7 +22,22 @@ interface DailyMain {
     selection_reason: string;
 }
 
+const BookmarkIcon = ({ active }: { active: boolean }) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.5 4.75A1.75 1.75 0 0 1 8.25 3h7.5a1.75 1.75 0 0 1 1.75 1.75v15l-5.5-3.6-5.5 3.6v-15Z" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+);
+
+const TrashIcon = () => (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 7h14M9 7V4.75h6V7m-8.5 0 .75 12h9.5l.75-12M10 10.5v5M14 10.5v5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
 const SecurityNews = () => {
+    const location = useLocation();
+    const requestedArticleId = Number(new URLSearchParams(location.search).get('articleId'));
+    const hasRequestedArticle = Number.isInteger(requestedArticleId) && requestedArticleId > 0;
     const [isAdmin, setIsAdmin] = useState(false);
     const [bookmarks, setBookmarks] = useState<Record<string, number>>({});
     const [bookmarkingKey, setBookmarkingKey] = useState('');
@@ -31,12 +47,14 @@ const SecurityNews = () => {
     const [selectedNewsForGeneration, setSelectedNewsForGeneration] = useState<NewsItem | null>(null);
     const [generatingNewsId, setGeneratingNewsId] = useState<number | null>(null);
     const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+    const [selectedAiNewsForDeletion, setSelectedAiNewsForDeletion] = useState<Pick<DailyMain, 'id' | 'title'> | null>(null);
+    const [deletingNewsId, setDeletingNewsId] = useState<number | null>(null);
     // 탭 상태 관리: 'main' (AI 메인 뉴스) 또는 'all' (전체 뉴스 리스트)
     const [activeTab, setActiveTab] = useState<'main' | 'all'>('main');
 
     // --- AI 뉴스 아카이브 전용 상태 ---
     // 'list': 히스토리 목록 화면, 'detail': 특정 기사 상세 화면
-    const [aiViewMode, setAiViewMode] = useState<'list' | 'detail'>('list');
+    const [aiViewMode, setAiViewMode] = useState<'list' | 'detail'>(hasRequestedArticle ? 'detail' : 'list');
     const [aiHistory, setAiHistory] = useState<DailyMain[]>([]);
     const [historyLoading, setHistoryLoading] = useState(true);
     const [historyPage, setHistoryPage] = useState(1);
@@ -186,6 +204,54 @@ const SecurityNews = () => {
         }
     };
 
+    useEffect(() => {
+        if (!hasRequestedArticle) return;
+
+        api.get(`/api/news/daily-main?id=${requestedArticleId}`)
+            .then((response) => {
+                if (response.data.status === 'success' && response.data.data) {
+                    setDailyMain(response.data.data);
+                }
+            })
+            .catch((error) => console.error('상세 뉴스 불러오기 실패:', error))
+            .finally(() => setMainLoading(false));
+    }, [hasRequestedArticle, requestedArticleId]);
+
+    const deleteAiArticle = async () => {
+        if (!selectedAiNewsForDeletion) return;
+        const target = selectedAiNewsForDeletion;
+        setDeletingNewsId(target.id);
+        setBookmarkMessage('');
+        try {
+            await api.delete(`/api/news/daily-main/${target.id}`);
+            setSelectedAiNewsForDeletion(null);
+            setBookmarks((current) => {
+                const next = { ...current };
+                delete next[`daily_main:${target.id}`];
+                return next;
+            });
+            setNews((current) => current.map((item) => (
+                item.ai_article_id === target.id ? { ...item, ai_article_id: null } : item
+            )));
+            if (dailyMain?.id === target.id) {
+                setDailyMain(null);
+                setAiViewMode('list');
+            }
+            if (aiHistory.length === 1 && historyPage > 1) {
+                setHistoryPage((current) => current - 1);
+            } else {
+                setHistoryRefreshKey((value) => value + 1);
+            }
+        } catch (error: unknown) {
+            const responseMessage = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                : undefined;
+            setBookmarkMessage(responseMessage ?? 'AI 기사를 삭제하지 못했습니다.');
+        } finally {
+            setDeletingNewsId(null);
+        }
+    };
+
     const openAiArticle = (id: number) => {
         setGenerationResult(null);
         setActiveTab('main');
@@ -280,15 +346,28 @@ const SecurityNews = () => {
                                                 justifyContent: 'space-between'
                                             }}
                                         >
-                                            <button
-                                                type="button"
-                                                className={`news-bookmark-button ${bookmarks[`daily_main:${item.id}`] ? 'active' : ''}`}
-                                                aria-label={bookmarks[`daily_main:${item.id}`] ? 'AI 뉴스 스크랩 해제' : 'AI 뉴스 스크랩'}
-                                                disabled={bookmarkingKey === `daily_main:${item.id}`}
-                                                onClick={(event) => { event.stopPropagation(); void toggleBookmark('daily_main', item.id); }}
-                                            >
-                                                {bookmarks[`daily_main:${item.id}`] ? '★' : '☆'}
-                                            </button>
+                                            <div className="ai-card-actions">
+                                                <button
+                                                    type="button"
+                                                    className={`news-bookmark-button ${bookmarks[`daily_main:${item.id}`] ? 'active' : ''}`}
+                                                    aria-label={bookmarks[`daily_main:${item.id}`] ? 'AI 뉴스 스크랩 해제' : 'AI 뉴스 스크랩'}
+                                                    disabled={bookmarkingKey === `daily_main:${item.id}`}
+                                                    onClick={(event) => { event.stopPropagation(); void toggleBookmark('daily_main', item.id); }}
+                                                >
+                                                    <BookmarkIcon active={Boolean(bookmarks[`daily_main:${item.id}`])} />
+                                                </button>
+                                                {isAdmin && (
+                                                    <button
+                                                        type="button"
+                                                        className="news-delete-icon-button"
+                                                        aria-label="AI 기사 삭제"
+                                                        disabled={deletingNewsId === item.id}
+                                                        onClick={(event) => { event.stopPropagation(); setSelectedAiNewsForDeletion(item); }}
+                                                    >
+                                                        <TrashIcon />
+                                                    </button>
+                                                )}
+                                            </div>
                                             <div>
                                                 <div style={{ fontSize: '0.85rem', color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.8rem', display: 'inline-block', padding: '0.2rem 0.6rem', backgroundColor: '#eff6ff', borderRadius: '4px' }}>
                                                     📅 {item.created_at} AI 보안 뉴스
@@ -341,14 +420,22 @@ const SecurityNews = () => {
                                 <div style={{ textAlign: 'center', color: '#64748b', padding: '4rem 0' }}>선택하신 뉴스를 불러오고 있습니다... 🚀</div>
                             ) : dailyMain ? (
                                 <div style={{ marginTop: '2rem' }}>
-                                    <button
-                                        type="button"
-                                        className={`news-detail-bookmark ${bookmarks[`daily_main:${dailyMain.id}`] ? 'active' : ''}`}
-                                        disabled={bookmarkingKey === `daily_main:${dailyMain.id}`}
-                                        onClick={() => void toggleBookmark('daily_main', dailyMain.id)}
-                                    >
-                                        {bookmarks[`daily_main:${dailyMain.id}`] ? '★ 스크랩됨' : '☆ 스크랩'}
-                                    </button>
+                                    <div className="news-detail-actions">
+                                        <button
+                                            type="button"
+                                            className={`news-detail-bookmark ${bookmarks[`daily_main:${dailyMain.id}`] ? 'active' : ''}`}
+                                            disabled={bookmarkingKey === `daily_main:${dailyMain.id}`}
+                                            onClick={() => void toggleBookmark('daily_main', dailyMain.id)}
+                                        >
+                                            <BookmarkIcon active={Boolean(bookmarks[`daily_main:${dailyMain.id}`])} />
+                                            {bookmarks[`daily_main:${dailyMain.id}`] ? '스크랩됨' : '스크랩'}
+                                        </button>
+                                        {isAdmin && (
+                                            <button type="button" className="news-detail-delete" onClick={() => setSelectedAiNewsForDeletion(dailyMain)}>
+                                                <TrashIcon /> 삭제
+                                            </button>
+                                        )}
+                                    </div>
                                     <div style={{ textAlign: 'center', marginBottom: '2rem', color: '#64748b', fontWeight: 'bold' }}>
                                         발행일: {dailyMain.created_at}
                                     </div>
@@ -434,7 +521,7 @@ const SecurityNews = () => {
                                             disabled={bookmarkingKey === `security_news:${item.id}`}
                                             onClick={() => void toggleBookmark('security_news', item.id)}
                                         >
-                                            {bookmarks[`security_news:${item.id}`] ? '★' : '☆'}
+                                            <BookmarkIcon active={Boolean(bookmarks[`security_news:${item.id}`])} />
                                         </button>
                                     </div>
                                     </div>
@@ -484,6 +571,22 @@ const SecurityNews = () => {
                         <div>
                             <button type="button" onClick={() => setGenerationResult(null)}>닫기</button>
                             <button type="button" className="confirm" autoFocus onClick={() => openAiArticle(generationResult.articleId)}>기사 보러가기</button>
+                        </div>
+                    </section>
+                </div>
+            )}
+            {selectedAiNewsForDeletion && (
+                <div className="news-confirm-backdrop" role="presentation" onMouseDown={() => setSelectedAiNewsForDeletion(null)}>
+                    <section role="dialog" aria-modal="true" aria-labelledby="news-delete-title" onMouseDown={(event) => event.stopPropagation()}>
+                        <span className="news-confirm-icon danger" aria-hidden="true"><TrashIcon /></span>
+                        <h2 id="news-delete-title">AI 기사를 삭제할까요?</h2>
+                        <p>삭제한 AI 기사는 복구할 수 없으며, 해당 기사에 직접 저장된 스크랩도 해제됩니다.</p>
+                        <strong>{selectedAiNewsForDeletion.title}</strong>
+                        <div>
+                            <button type="button" onClick={() => setSelectedAiNewsForDeletion(null)}>취소</button>
+                            <button type="button" className="delete-confirm" autoFocus disabled={deletingNewsId !== null} onClick={() => void deleteAiArticle()}>
+                                {deletingNewsId ? '삭제 중...' : '삭제'}
+                            </button>
                         </div>
                     </section>
                 </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import './NewsBookmarks.css';
 
@@ -11,9 +12,11 @@ type NewsBookmark = {
     source: string | null;
     published_at: string | null;
     created_at: string | null;
+    ai_article_id: number | null;
 };
 
 const NewsBookmarks = () => {
+    const navigate = useNavigate();
     const [bookmarks, setBookmarks] = useState<NewsBookmark[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -46,6 +49,14 @@ const NewsBookmarks = () => {
         }
     };
 
+    const openBookmark = (item: NewsBookmark) => {
+        if (item.ai_article_id) {
+            navigate(`/news?articleId=${item.ai_article_id}`);
+            return;
+        }
+        window.open(item.url, '_blank', 'noopener,noreferrer');
+    };
+
     if (isLoading) return <div className="bookmark-status">스크랩한 뉴스를 불러오고 있습니다.</div>;
 
     return (
@@ -58,12 +69,12 @@ const NewsBookmarks = () => {
                 <div className="bookmark-list">
                     {bookmarks.map((item) => (
                         <article key={item.id}>
-                            <a href={item.url} target="_blank" rel="noopener noreferrer">
+                            <button type="button" className="bookmark-link" onClick={() => openBookmark(item)}>
                                 <span className="bookmark-kind">{item.item_type === 'daily_main' ? 'AI 메인 뉴스' : item.source || '보안 뉴스'}</span>
                                 <h4>{item.title}</h4>
                                 <p>{item.published_at || '발행일 미상'}</p>
-                            </a>
-                            <button type="button" disabled={removingId === item.id} onClick={() => void removeBookmark(item.id)}>
+                            </button>
+                            <button type="button" className="bookmark-remove" disabled={removingId === item.id} onClick={() => void removeBookmark(item.id)}>
                                 {removingId === item.id ? '해제 중...' : '스크랩 해제'}
                             </button>
                         </article>
