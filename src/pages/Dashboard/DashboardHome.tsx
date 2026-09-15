@@ -38,6 +38,7 @@ const DashboardHome = () => {
             color: '#ef4444', // 강렬한 빨간색으로 포인트
             path: '/notes/research'
         });
+        menus.push({ id: 'signup-requests', title: '✅ 회원가입 승인', desc: '대기 중인 회원가입 신청을 확인하고 승인합니다.', color: '#0f766e', path: '/admin/signup-requests' });
     }
 
     return (
