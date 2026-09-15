@@ -62,13 +62,16 @@ jobs:
             
             # 3. 최신 이미지 다운로드
             docker pull $IMAGE_URL
+
+            # Caddy가 컨테이너 이름으로 프론트엔드에 연결할 공용 네트워크를 보장합니다.
+            docker network inspect study-network >/dev/null 2>&1 || docker network create study-network
             
             # 4. 기존 컨테이너 중지 및 삭제
             docker stop study-front-app || true
             docker rm study-front-app || true
             
-            # 5. 새 컨테이너 실행 (서버의 80포트를 컨테이너의 80포트로 연결)
-            docker run -d -p 80:80 --name study-front-app $IMAGE_URL
+            # 5. 외부 포트는 Caddy만 공개하고 프론트엔드는 전용 네트워크에서만 제공합니다.
+            docker run -d --network study-network --name study-front-app $IMAGE_URL
             
             # 6. 사용하지 않는 잉여 도커 이미지 및 캐시 청소 (서버 용량 확보)
             docker image prune -f
