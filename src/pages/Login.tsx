@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { api } from '../services/api';
 // 👇 로고 이미지를 불러옵니다
@@ -11,6 +11,11 @@ const Login = () => {
 
     const login = useAuthStore((state) => state.login);
     const navigate = useNavigate();
+    const location = useLocation();
+    const returnPath = (location.state as { from?: unknown } | null)?.from;
+    const destination = typeof returnPath === 'string' && returnPath.startsWith('/') && !returnPath.startsWith('//')
+        ? returnPath
+        : '/';
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,7 +34,7 @@ const Login = () => {
             if (response.data.status === 'success') {
                 // 백엔드가 넘겨준 아이디와 만료 시각을 모두 Zustand Store에 넘겨줌!
                 login(response.data.username, response.data.expires_at);
-                navigate('/');
+                navigate(destination, { replace: true });
             }
         } catch (error) {
             console.error('로그인 에러:', error);

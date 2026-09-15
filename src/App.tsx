@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import { api } from './services/api';
 
@@ -19,6 +19,7 @@ import ProblemSolver from './pages/Dashboard/Practice/ProblemSolver';
 import ProblemEditPage from './pages/Dashboard/Practice/ProblemEditPage';
 import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
+import SignupRequests from './pages/Dashboard/SignupRequests';
 import logoImg from './assets/logo.png';
 
 import NotesLayout from './pages/Dashboard/ResearchNotes/NotesLayout';
@@ -28,7 +29,10 @@ import ResultsDashboard from './pages/Dashboard/ResearchNotes/ResultsDashboard';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAuthStore((state) => state.username);
-  if (!username) return <Navigate to="/login" replace />;
+  const location = useLocation();
+  if (!username) {
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
+  }
   return <>{children}</>;
 };
 
@@ -162,6 +166,7 @@ function App() {
           </Route>
           <Route path="news" element={<SecurityNews />} />
           <Route path="mypage" element={<MyPage />} />
+          <Route path="admin/signup-requests" element={<SignupRequests />} />
           
           {/* 연구 노트 라우트 */}
           <Route path="notes" element={<NotesLayout />}>
