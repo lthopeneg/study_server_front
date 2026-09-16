@@ -1,8 +1,15 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../services/api';
 
+type MetricsData = {
+    total_records: number;
+    average_score: number;
+    decision_counts: Record<string, number>;
+    cwe_average_scores: Record<string, number>;
+};
+
 const MetricsDashboard = () => {
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<MetricsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -46,7 +53,7 @@ const MetricsDashboard = () => {
                     <h3 style={{ color: '#334155' }}>판정 결과 비율</h3>
                     <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
                         <tbody>
-                            {Object.entries(decision_counts || {}).map(([key, count]: any) => (
+                            {Object.entries(decision_counts || {}).map(([key, count]) => (
                                 <tr key={key} style={{ borderBottom: '1px solid #e2e8f0' }}>
                                     <td style={{ padding: '0.8rem', color: '#475569', fontWeight: 'bold' }}>{key}</td>
                                     <td style={{ padding: '0.8rem', textAlign: 'right', color: '#0f172a' }}>{count}건</td>
@@ -60,7 +67,7 @@ const MetricsDashboard = () => {
                     <h3 style={{ color: '#334155' }}>CWE별 평균 점수</h3>
                     <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
                         <tbody>
-                            {Object.entries(cwe_average_scores || {}).map(([cwe, score]: any) => (
+                            {Object.entries(cwe_average_scores || {}).map(([cwe, score]) => (
                                 <tr key={cwe} style={{ borderBottom: '1px solid #e2e8f0' }}>
                                     <td style={{ padding: '0.8rem', color: '#475569', fontWeight: 'bold' }}>{cwe}</td>
                                     <td style={{ padding: '0.8rem', textAlign: 'right', color: '#0f172a' }}>{Number(score).toFixed(2)}점</td>

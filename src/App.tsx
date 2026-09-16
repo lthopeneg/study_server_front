@@ -36,6 +36,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const [state, setState] = useState<'checking' | 'allowed' | 'denied'>('checking');
+  useEffect(() => {
+    const controller = new AbortController();
+    api.get('/api/user/profile', { signal: controller.signal })
+      .then((response) => setState(response.data?.data?.role === 'ADMIN' ? 'allowed' : 'denied'))
+      .catch(() => setState('denied'));
+    return () => controller.abort();
+  }, []);
+  if (state === 'checking') return <div role="status" style={{ padding: '2rem', textAlign: 'center' }}>관리자 권한을 확인하고 있습니다.</div>;
+  if (state === 'denied') return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
 const AuthStatusScreen = ({
   error = false,
   onRetry,
@@ -166,7 +180,7 @@ function App() {
           </Route>
           <Route path="news" element={<SecurityNews />} />
           <Route path="mypage" element={<MyPage />} />
-          <Route path="admin/signup-requests" element={<SignupRequests />} />
+          <Route path="admin/signup-requests" element={<AdminRoute><SignupRequests /></AdminRoute>} />
           
           {/* 연구 노트 라우트 */}
           <Route path="notes" element={<NotesLayout />}>

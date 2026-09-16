@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { api } from '../../services/api';
@@ -11,6 +11,17 @@ const DashboardLayout = () => {
 
     // 남은 시간을 초(Second) 단위로 저장하는 임시 State
     const [timeLeft, setTimeLeft] = useState<number>(0);
+
+    const handleLogout = useCallback(async () => {
+        try {
+            await api.post('/api/logout');
+        } catch (error) {
+            console.error("로그아웃 에러:", error);
+        } finally {
+            logout();
+            navigate('/login');
+        }
+    }, [logout, navigate]);
 
     // [1] 매 1초마다 남은 시간을 계산하는 핵심 로직
     useEffect(() => {
@@ -33,24 +44,13 @@ const DashboardLayout = () => {
 
         // 컴포넌트가 꺼질 때(페이지 이동 등) 메모리 누수를 방지하기 위해 타이머 찌꺼기 제거
         return () => clearInterval(timer);
-    }, [expiresAt]); // expiresAt 값이 바뀔 때마다(로그인/연장 누를 때마다) 타이머 새로고침
+    }, [expiresAt, handleLogout]); // expiresAt 값이 바뀔 때마다(로그인/연장 누를 때마다) 타이머 새로고침
 
     // 초(sec)를 분:초(MM:SS) 포맷으로 예쁘게 바꿔주는 함수
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');
         const s = (seconds % 60).toString().padStart(2, '0');
         return `${m}:${s}`;
-    };
-
-    const handleLogout = async () => {
-        try {
-            await api.post('/api/logout');
-        } catch (error) {
-            console.error("로그아웃 에러:", error);
-        } finally {
-            logout();
-            navigate('/login');
-        }
     };
 
     // [2] 연장 버튼 클릭 시 실행되는 통신 함수
