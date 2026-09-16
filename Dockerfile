@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 패키지 매니저 파일 복사 및 설치
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 # 소스 코드 복사 및 빌드
 COPY . .

@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import LearningProgress from './LearningProgress';
 import NewsBookmarks from './NewsBookmarks';
+import LoginSessions from './LoginSessions';
 
 interface UserProfile {
     login_id: string;
@@ -24,7 +25,7 @@ const MyPage = () => {
     const navigate = useNavigate();
 
     // 화면 상태 관리: 'menu'(기본 허브), 'verify'(비밀번호 확인창), 'edit'(정보 수정창)
-    const [viewMode, setViewMode] = useState<'menu' | 'verify' | 'edit' | 'progress' | 'bookmarks'>('menu');
+    const [viewMode, setViewMode] = useState<'menu' | 'verify' | 'edit' | 'progress' | 'bookmarks' | 'sessions'>('menu');
 
     // [edit 화면용] 프로필 데이터 상태
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -117,7 +118,7 @@ const MyPage = () => {
     };
 
     return (
-        <div style={{ maxWidth: ['progress', 'bookmarks'].includes(viewMode) ? '1000px' : '600px', margin: '0 auto', padding: '2rem' }}>
+        <div style={{ maxWidth: ['progress', 'bookmarks', 'sessions'].includes(viewMode) ? '1000px' : '600px', margin: '0 auto', padding: '2rem' }}>
             <h2 style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span>👤 마이페이지</span>
                 {viewMode !== 'menu' && (
@@ -171,11 +172,15 @@ const MyPage = () => {
                         </div>
                         <span style={{ fontSize: '1.5rem', color: '#94a3b8' }}>→</span>
                     </button>
+                    <button onClick={() => setViewMode('sessions')} style={{ padding: '1.5rem', backgroundColor: 'white', border: '1px solid #cbd5e1', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div><div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1e293b', marginBottom: '0.3rem' }}>🛡️ 로그인된 기기</div><div style={{ fontSize: '0.9rem', color: '#64748b' }}>현재 로그인 세션 확인 및 원격 종료</div></div><span style={{ fontSize: '1.5rem', color: '#94a3b8' }}>→</span>
+                    </button>
                 </div>
             )}
 
             {viewMode === 'progress' && <LearningProgress />}
             {viewMode === 'bookmarks' && <NewsBookmarks />}
+            {viewMode === 'sessions' && <LoginSessions />}
 
             {/* =========================================
                  [화면 2] 비밀번호 확인 창 (verify)
