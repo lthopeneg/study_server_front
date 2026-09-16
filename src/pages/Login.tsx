@@ -36,9 +36,14 @@ const Login = () => {
                 login(response.data.username, response.data.expires_at);
                 navigate(destination, { replace: true });
             }
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('로그인 에러:', error);
-            alert('로그인에 실패했습니다. (서버와 연결되지 않거나 계정 정보가 틀렸습니다.)');
+            const status = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as { response?: { status?: number } }).response?.status
+                : undefined;
+            alert(status === 429
+                ? '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.'
+                : '로그인에 실패했습니다. (서버와 연결되지 않거나 계정 정보가 틀렸습니다.)');
         }
     };
 
