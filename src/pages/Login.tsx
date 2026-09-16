@@ -8,6 +8,11 @@ import logoImg from '../assets/logo.png';
 const Login = () => {
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
+    const [authNotice] = useState(() => {
+        const notice = sessionStorage.getItem('auth_notice') ?? '';
+        sessionStorage.removeItem('auth_notice');
+        return notice;
+    });
 
     const login = useAuthStore((state) => state.login);
     const navigate = useNavigate();
@@ -56,6 +61,7 @@ const Login = () => {
                 <img src={logoImg} alt="SECURECODE SPACE" style={{ height: '150px', marginBottom: '2.5rem', objectFit: 'contain' }} />
 
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%' }}>
+                    {authNotice && <div role="status" style={{ padding: '10px', borderRadius: '6px', backgroundColor: '#e0f2fe', color: '#075985', fontSize: '0.85rem', lineHeight: 1.5 }}>{authNotice}</div>}
                     <input
                         type="text"
                         placeholder="아이디"
