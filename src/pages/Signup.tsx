@@ -12,6 +12,12 @@ const Signup = () => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const update = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
+    const passwordRules = [
+        { label: '8자 이상', valid: form.password.length >= 8 },
+        { label: '영문 포함', valid: /[a-zA-Z]/.test(form.password) },
+        { label: '숫자 포함', valid: /\d/.test(form.password) },
+        { label: '특수문자 포함', valid: /[\W_]/.test(form.password) },
+    ];
 
     const submit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -69,7 +75,7 @@ const Signup = () => {
                                 <div className="signup-field"><label htmlFor="signup-password">비밀번호</label><div className="signup-input"><span aria-hidden="true">●</span><input id="signup-password" type="password" autoComplete="new-password" required value={form.password} onChange={(event) => update('password', event.target.value)} placeholder="비밀번호 입력" /></div></div>
                                 <div className="signup-field"><label htmlFor="signup-password-confirm">비밀번호 확인</label><div className="signup-input"><span aria-hidden="true">✓</span><input id="signup-password-confirm" type="password" autoComplete="new-password" required value={form.passwordConfirm} onChange={(event) => update('passwordConfirm', event.target.value)} placeholder="한 번 더 입력" /></div></div>
                             </div>
-                            <div className="signup-password-guide"><span>8자 이상</span><span>영문 포함</span><span>숫자 포함</span><span>특수문자 포함</span></div>
+                            <div className="signup-password-guide" aria-label="비밀번호 조건" aria-live="polite">{passwordRules.map((rule) => <span key={rule.label} className={rule.valid ? 'is-valid' : ''}><b aria-hidden="true">{rule.valid ? '✓' : '·'}</b>{rule.label}</span>)}</div>
                             {error && <div className="signup-alert" role="alert"><strong>!</strong><span>{error}</span></div>}
                             <button className="signup-submit" type="submit" disabled={isLoading}>{isLoading ? <><i /> 신청을 전달하고 있습니다</> : <>가입 승인 요청 <span>→</span></>}</button>
                         </form>
