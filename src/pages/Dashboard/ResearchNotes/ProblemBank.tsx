@@ -3,8 +3,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { api } from '../../../services/api';
 
+type ProblemCase = { id: string; cwe: string; type: string; decision: string };
+
 const ProblemBank = () => {
-    const [cases, setCases] = useState<any[]>([]);
+    const [cases, setCases] = useState<ProblemCase[]>([]);
     const [selectedCaseId, setSelectedCaseId] = useState<string>('');
     const [caseContent, setCaseContent] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +43,7 @@ const ProblemBank = () => {
                 } else {
                     setCaseContent('마크다운 파일을 찾을 수 없습니다.');
                 }
-            } catch (error) {
+            } catch {
                 setCaseContent('마크다운 파일 로드 실패');
             } finally {
                 setIsCaseLoading(false);
@@ -94,13 +96,13 @@ const ProblemBank = () => {
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
-                                h1: ({node, ...props}) => <h1 style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', color: '#1e293b' }} {...props} />,
-                                h2: ({node, ...props}) => <h2 style={{ marginTop: '2rem', color: '#334155' }} {...props} />,
-                                h3: ({node, ...props}) => <h3 style={{ marginTop: '1.5rem', color: '#475569' }} {...props} />,
-                                ul: ({node, ...props}) => <ul style={{ paddingLeft: '1.5rem', marginBottom: '1rem' }} {...props} />,
-                                li: ({node, ...props}) => <li style={{ marginBottom: '0.3rem' }} {...props} />,
-                                code: ({node, ...props}) => <code style={{ backgroundColor: '#f1f5f9', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.9em' }} {...props} />,
-                                pre: ({node, ...props}) => <pre style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', overflowX: 'auto', border: '1px solid #e2e8f0' }} {...props} />
+                                h1: ({...props}) => <h1 style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', color: '#1e293b' }} {...props} />,
+                                h2: ({...props}) => <h2 style={{ marginTop: '2rem', color: '#334155' }} {...props} />,
+                                h3: ({...props}) => <h3 style={{ marginTop: '1.5rem', color: '#475569' }} {...props} />,
+                                ul: ({...props}) => <ul style={{ paddingLeft: '1.5rem', marginBottom: '1rem' }} {...props} />,
+                                li: ({...props}) => <li style={{ marginBottom: '0.3rem' }} {...props} />,
+                                code: ({...props}) => <code style={{ backgroundColor: '#f1f5f9', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.9em' }} {...props} />,
+                                pre: ({...props}) => <pre style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', overflowX: 'auto', border: '1px solid #e2e8f0' }} {...props} />
                             }}
                         >
                             {caseContent}
