@@ -20,6 +20,7 @@ import ProblemEditPage from './pages/Dashboard/Practice/ProblemEditPage';
 import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
 import SignupRequests from './pages/Dashboard/SignupRequests';
+import AuditLogs from './pages/Dashboard/AuditLogs';
 import logoImg from './assets/logo.png';
 
 import NotesLayout from './pages/Dashboard/ResearchNotes/NotesLayout';
@@ -181,6 +182,7 @@ function App() {
           <Route path="news" element={<SecurityNews />} />
           <Route path="mypage" element={<MyPage />} />
           <Route path="admin/signup-requests" element={<AdminRoute><SignupRequests /></AdminRoute>} />
+          <Route path="admin/audit-logs" element={<AdminRoute><AuditLogs /></AdminRoute>} />
           
           {/* 연구 노트 라우트 */}
           <Route path="notes" element={<NotesLayout />}>

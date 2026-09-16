@@ -39,6 +39,7 @@ const DashboardHome = () => {
             path: '/notes/research'
         });
         menus.push({ id: 'signup-requests', title: '✅ 회원가입 승인', desc: '대기 중인 회원가입 신청을 확인하고 승인합니다.', color: '#0f766e', path: '/admin/signup-requests' });
+        menus.push({ id: 'audit-logs', title: '🛡️ 보안 감사 로그', desc: '관리자와 계정 보안 관련 주요 작업 이력을 확인합니다.', color: '#4338ca', path: '/admin/audit-logs' });
     }
 
     return (
