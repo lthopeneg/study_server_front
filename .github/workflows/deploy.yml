@@ -94,7 +94,7 @@ jobs:
             docker rm study-front-app || true
 
             # 5. 외부 포트는 Caddy만 공개하고 프론트엔드는 전용 네트워크에서만 제공합니다.
-            docker run -d --network study-network --name study-front-app $IMAGE_URL
+            docker run -d --restart unless-stopped --network study-network --name study-front-app $IMAGE_URL
 
             # 6. 사용하지 않는 잉여 도커 이미지 및 캐시 청소 (서버 용량 확보)
             docker image prune -f

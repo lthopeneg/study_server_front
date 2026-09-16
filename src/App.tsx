@@ -23,10 +23,6 @@ import SignupRequests from './pages/Dashboard/SignupRequests';
 import AuditLogs from './pages/Dashboard/AuditLogs';
 import logoImg from './assets/logo.png';
 
-import NotesLayout from './pages/Dashboard/ResearchNotes/NotesLayout';
-import ExperimentIDE from './pages/Dashboard/ResearchNotes/ExperimentIDE';
-import ResearchFileBrowser from './pages/Dashboard/ResearchNotes/ResearchFileBrowser';
-import ResultsDashboard from './pages/Dashboard/ResearchNotes/ResultsDashboard';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAuthStore((state) => state.username);
@@ -184,13 +180,6 @@ function App() {
           <Route path="admin/signup-requests" element={<AdminRoute><SignupRequests /></AdminRoute>} />
           <Route path="admin/audit-logs" element={<AdminRoute><AuditLogs /></AdminRoute>} />
           
-          {/* 연구 노트 라우트 */}
-          <Route path="notes" element={<NotesLayout />}>
-            <Route path="research" element={<ResearchFileBrowser section="notes" title="연구 노트" description="주차별 연구 기록을 선택해서 확인합니다." />} />
-            <Route path="experiments" element={<ExperimentIDE />} />
-            <Route path="results" element={<ResultsDashboard />} />
-            <Route path="*" element={<Navigate to="research" replace />} />
-          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
