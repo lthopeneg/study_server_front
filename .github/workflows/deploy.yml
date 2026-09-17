@@ -62,7 +62,10 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          build-args: APP_REVISION=${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
 
   # 2. 오라클 서버에 접속하여 이미지를 다운받고 실행하는 작업
@@ -76,15 +79,18 @@ jobs:
           host: ${{ secrets.SS_HOST }}
           username: ${{ secrets.SS_USERNAME }}
           key: ${{ secrets.SS_KEY }}
+          script_stop: true
           script: |
+            set -eu
             # 1. 저장소 이름을 소문자로 강제 변환 (도커 이미지는 대문자를 허용하지 않음)
-            IMAGE_URL="ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):latest"
+            IMAGE_URL="ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
 
             # 2. GHCR 로그인 (서버 내부에서 프라이빗 이미지를 pull 받기 위함)
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             # 3. 최신 이미지 다운로드
-            docker pull $IMAGE_URL
+            docker pull "$IMAGE_URL"
+            docker image inspect "$IMAGE_URL" >/dev/null
 
             # Caddy가 컨테이너 이름으로 프론트엔드에 연결할 공용 네트워크를 보장합니다.
             docker network inspect study-network >/dev/null 2>&1 || docker network create study-network
@@ -94,7 +100,24 @@ jobs:
             docker rm study-front-app || true
 
             # 5. 외부 포트는 Caddy만 공개하고 프론트엔드는 전용 네트워크에서만 제공합니다.
-            docker run -d --restart unless-stopped --network study-network --name study-front-app $IMAGE_URL
+            docker run -d --restart unless-stopped --network study-network --name study-front-app "$IMAGE_URL"
+
+            EXPECTED_IMAGE_ID="$(docker image inspect "$IMAGE_URL" --format '{{.Id}}')"
+            RUNNING_IMAGE_ID="$(docker inspect study-front-app --format '{{.Image}}')"
+            test "$RUNNING_IMAGE_ID" = "$EXPECTED_IMAGE_ID"
+
+            ATTEMPT=0
+            VERIFIED=false
+            while [ "$ATTEMPT" -lt 12 ]; do
+              ATTEMPT=$((ATTEMPT + 1))
+              if RESPONSE="$(curl -fsS --max-time 5 https://scspace.duckdns.org/version.json 2>/dev/null)" \
+                && printf '%s' "$RESPONSE" | grep -Eq '"revision"[[:space:]]*:[[:space:]]*"${{ github.sha }}"'; then
+                VERIFIED=true
+                break
+              fi
+              sleep 3
+            done
+            test "$VERIFIED" = true
 
             # 6. 사용하지 않는 잉여 도커 이미지 및 캐시 청소 (서버 용량 확보)
             docker image prune -f

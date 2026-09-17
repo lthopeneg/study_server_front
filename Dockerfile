@@ -15,6 +15,8 @@ RUN npm run build
 # 2단계: 실행 환경 (Production Stage)
 FROM nginx:alpine
 
+ARG APP_REVISION=unknown
+
 # 기존의 기본 Nginx 설정 파일 삭제
 RUN rm /etc/nginx/conf.d/default.conf
 
@@ -23,6 +25,7 @@ COPY nginx.conf /etc/nginx/conf.d
 
 # Builder 단계에서 생성된 빌드 결과물(dist)을 Nginx의 서빙 폴더로 복사
 COPY --from=builder /app/dist /usr/share/nginx/html
+RUN printf '{"revision":"%s"}\n' "$APP_REVISION" > /usr/share/nginx/html/version.json
 
 # 컨테이너가 사용할 포트
 EXPOSE 80
