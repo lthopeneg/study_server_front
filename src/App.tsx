@@ -21,6 +21,7 @@ import SecurityNews from './pages/Dashboard/SecurityNews';
 import MyPage from './pages/Dashboard/MyPage';
 import SignupRequests from './pages/Dashboard/SignupRequests';
 import AuditLogs from './pages/Dashboard/AuditLogs';
+import WeeklyNotes from './pages/Dashboard/ResearchNotes/WeeklyNotes';
 import logoImg from './assets/logo.png';
 
 
@@ -179,6 +180,7 @@ function App() {
           <Route path="mypage" element={<MyPage />} />
           <Route path="admin/signup-requests" element={<AdminRoute><SignupRequests /></AdminRoute>} />
           <Route path="admin/audit-logs" element={<AdminRoute><AuditLogs /></AdminRoute>} />
+          <Route path="notes/research" element={<AdminRoute><WeeklyNotes /></AdminRoute>} />
           
         </Route>
       </Routes>
