@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { api } from '../../../services/api';
+import { researchErrorMessage } from './researchErrors';
 import './WeeklyNotes.css';
 
 type WeeklyNote = { name: string; title: string; order: number };
@@ -35,6 +36,7 @@ const WeeklyNotes = () => {
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const [contentRetry, setContentRetry] = useState(0);
 
   useEffect(() => {
     if (section === 'weekly' || resources[resourceId] !== undefined) return;
@@ -44,7 +46,7 @@ const WeeklyNotes = () => {
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
           console.error('연구 자료 조회 실패:', error);
-          setResourceError('연구 자료를 불러오지 못했습니다.');
+          setResourceError(researchErrorMessage(error, '자료'));
         }
       })
       .finally(() => {
@@ -78,7 +80,7 @@ const WeeklyNotes = () => {
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
           console.error('연구 노트 목록 조회 실패:', error);
-          setListError('연구 노트 목록을 불러오지 못했습니다.');
+          setListError(researchErrorMessage(error, '목록'));
         }
       })
       .finally(() => {
@@ -104,11 +106,16 @@ const WeeklyNotes = () => {
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
           console.error('연구 노트 본문 조회 실패:', error);
-          setLoadedNote({ name: selectedName, content: '', error: '연구 노트를 불러오지 못했습니다.' });
+          setLoadedNote({ name: selectedName, content: '', error: researchErrorMessage(error, '노트') });
         }
       });
     return () => controller.abort();
-  }, [selectedName]);
+  }, [selectedName, contentRetry]);
+
+  const retryContent = () => {
+    setLoadedNote(null);
+    setContentRetry((count) => count + 1);
+  };
 
   const visibleNotes = useMemo(
     () => notes.filter((note) => note.title.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())),
@@ -187,7 +194,7 @@ const WeeklyNotes = () => {
         <article className="weekly-notes__article">
           {selectedNote && <div className="weekly-notes__article-heading"><span>RESEARCH NOTE</span><h2>{selectedNote.title}</h2><button className="weekly-notes__artifact-link" onClick={() => { setSection('methods'); selectResource('index'); }} type="button">주차별 산출물 보기 →</button></div>}
           {contentLoading && <p className="weekly-notes__message" role="status">본문을 불러오는 중입니다...</p>}
-          {contentError && <p className="weekly-notes__message weekly-notes__message--error" role="alert">{contentError}</p>}
+          {contentError && <div className="weekly-notes__message weekly-notes__message--error" role="alert"><p>{contentError}</p><button className="weekly-notes__retry" onClick={retryContent} type="button">다시 시도</button></div>}
           {!selectedName && !listLoading && <p className="weekly-notes__message">왼쪽에서 연구 노트를 선택하세요.</p>}
           {!contentLoading && !contentError && content && (
             <div className="weekly-notes__markdown">
