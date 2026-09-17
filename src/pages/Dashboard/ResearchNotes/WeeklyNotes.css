@@ -1,0 +1,37 @@
+.weekly-notes { max-width: 1500px; margin: 0 auto; color: #1e293b; }
+.weekly-notes__header { padding: 1rem 0 2rem; }
+.weekly-notes__eyebrow, .weekly-notes__article-heading span { color: #2563eb; font-size: .72rem; font-weight: 800; letter-spacing: .16em; }
+.weekly-notes__header h1 { margin: .5rem 0; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+.weekly-notes__header p { margin: 0; color: #64748b; }
+.weekly-notes__layout { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.weekly-notes__sidebar, .weekly-notes__article { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 12px 30px rgba(15, 23, 42, .04); }
+.weekly-notes__sidebar { padding: 1.25rem; }
+.weekly-notes__sidebar-heading { display: flex; justify-content: space-between; align-items: center; }
+.weekly-notes__sidebar-heading h2 { margin: 0; font-size: 1rem; }
+.weekly-notes__sidebar-heading span { color: #64748b; font-size: .8rem; }
+.weekly-notes__search { display: block; margin: 1rem 0; }
+.weekly-notes__search input { box-sizing: border-box; width: 100%; padding: .72rem .85rem; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
+.weekly-notes__search input:focus-visible, .weekly-notes__item:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+.weekly-notes__list { display: grid; gap: .35rem; max-height: min(65vh, 680px); overflow-y: auto; }
+.weekly-notes__item { display: flex; align-items: center; gap: .85rem; width: 100%; padding: .78rem .7rem; border: 0; border-radius: 10px; background: transparent; color: #475569; cursor: pointer; font: inherit; text-align: left; }
+.weekly-notes__item:hover { background: #eff6ff; }
+.weekly-notes__item--active { background: #dbeafe; color: #1d4ed8; font-weight: 700; }
+.weekly-notes__item-number { color: #94a3b8; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.weekly-notes__item--active .weekly-notes__item-number { color: #2563eb; }
+.weekly-notes__article { min-height: 500px; padding: clamp(1.5rem, 4vw, 3rem); }
+.weekly-notes__article-heading { padding-bottom: 1.2rem; border-bottom: 1px solid #e2e8f0; }
+.weekly-notes__article-heading h2 { margin: .5rem 0 0; font-size: 1.55rem; }
+.weekly-notes__message { color: #64748b; line-height: 1.6; }
+.weekly-notes__message--error { color: #b91c1c; }
+.weekly-notes__markdown { max-width: 850px; color: #334155; line-height: 1.8; overflow-wrap: anywhere; }
+.weekly-notes__markdown h1, .weekly-notes__markdown h2, .weekly-notes__markdown h3 { color: #0f172a; line-height: 1.4; }
+.weekly-notes__markdown h1 { font-size: 1.6rem; }
+.weekly-notes__markdown h2 { margin-top: 2rem; font-size: 1.25rem; }
+.weekly-notes__markdown h3 { margin-top: 1.5rem; font-size: 1.08rem; }
+.weekly-notes__markdown pre { padding: 1rem; overflow-x: auto; border-radius: 10px; background: #0f172a; color: #e2e8f0; }
+.weekly-notes__markdown :not(pre) > code { padding: .15rem .3rem; border-radius: 4px; background: #f1f5f9; }
+.weekly-notes__markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.weekly-notes__markdown th, .weekly-notes__markdown td { padding: .6rem .8rem; border: 1px solid #e2e8f0; text-align: left; }
+.weekly-notes__markdown th { background: #f8fafc; }
+.weekly-notes__markdown a { color: #2563eb; }
+@media (max-width: 800px) { .weekly-notes__layout { grid-template-columns: minmax(0, 1fr); } .weekly-notes__list { max-height: 210px; } .weekly-notes__article { min-height: 350px; } }
