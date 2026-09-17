@@ -23,6 +23,8 @@
 .weekly-notes__article-heading h2 { margin: .5rem 0 0; font-size: 1.55rem; }
 .weekly-notes__message { color: #64748b; line-height: 1.6; }
 .weekly-notes__message--error { color: #b91c1c; }
+.weekly-notes__retry { padding: .55rem .8rem; border: 1px solid #bfdbfe; border-radius: 8px; background: #eff6ff; color: #1d4ed8; cursor: pointer; font: inherit; font-weight: 700; }
+.weekly-notes__retry:hover { background: #dbeafe; }
 .weekly-notes__markdown { max-width: 850px; color: #334155; line-height: 1.8; overflow-wrap: anywhere; }
 .weekly-notes__markdown h1, .weekly-notes__markdown h2, .weekly-notes__markdown h3 { color: #0f172a; line-height: 1.4; }
 .weekly-notes__markdown h1 { font-size: 1.6rem; }
