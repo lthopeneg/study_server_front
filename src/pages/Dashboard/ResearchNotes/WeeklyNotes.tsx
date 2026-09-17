@@ -13,6 +13,7 @@ const WeeklyNotes = () => {
   const [query, setQuery] = useState('');
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -31,7 +32,13 @@ const WeeklyNotes = () => {
         if (!controller.signal.aborted) setListLoading(false);
       });
     return () => controller.abort();
-  }, []);
+  }, [retryCount]);
+
+  const retryList = () => {
+    setListError('');
+    setListLoading(true);
+    setRetryCount((count) => count + 1);
+  };
 
   useEffect(() => {
     if (!selectedName) return;
@@ -83,7 +90,12 @@ const WeeklyNotes = () => {
             />
           </label>
           {listLoading && <p className="weekly-notes__message" role="status">목록을 불러오는 중입니다...</p>}
-          {listError && <p className="weekly-notes__message weekly-notes__message--error" role="alert">{listError}</p>}
+          {listError && (
+            <div className="weekly-notes__message weekly-notes__message--error" role="alert">
+              <p>{listError}</p>
+              <button className="weekly-notes__retry" onClick={retryList} type="button">다시 시도</button>
+            </div>
+          )}
           {!listLoading && !listError && notes.length === 0 && <p className="weekly-notes__message">등록된 연구 노트가 없습니다.</p>}
           {!listLoading && !listError && notes.length > 0 && visibleNotes.length === 0 && <p className="weekly-notes__message">검색 결과가 없습니다.</p>}
           <div className="weekly-notes__list">
