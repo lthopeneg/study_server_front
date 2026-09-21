@@ -281,6 +281,7 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
             const errorResponse = typeof error === 'object' && error !== null && 'response' in error
                 ? (error as {
                     response?: {
+                        status?: number;
                         data?: {
                             message?: string;
                             data?: {
@@ -291,10 +292,10 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                             };
                         };
                     };
-                }).response?.data
+                }).response
                 : undefined;
-            const responseMessage = errorResponse?.message;
-            const failureData = errorResponse?.data;
+            const responseMessage = errorResponse?.data?.message;
+            const failureData = errorResponse?.data?.data;
             if (
                 failureData?.can_retry_repair
                 && failureData.draft
@@ -313,7 +314,9 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 setGenerationKey((current) => current + 1);
                 requestAnimationFrame(() => generatedPreviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
             }
-            setMessage(responseMessage ?? 'AI 문제를 생성하지 못했습니다.');
+            setMessage(errorResponse?.status === 429
+                ? '문제 생성 요청 한도에 도달했습니다. 생성 요청은 관리자 계정별 시간당 10회까지 가능하며 잠시 후 다시 시도할 수 있습니다.'
+                : responseMessage ?? 'AI 문제를 생성하지 못했습니다.');
         } finally {
             if (generationRequestRef.current?.id === generationId) {
                 generationRequestRef.current = null;
