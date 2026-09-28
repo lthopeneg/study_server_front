@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
@@ -24,6 +24,7 @@ import AuditLogs from './pages/Dashboard/AuditLogs';
 import WeeklyNotes from './pages/Dashboard/ResearchNotes/WeeklyNotes';
 import logoImg from './assets/logo.png';
 
+const MiniGamePage = lazy(() => import('./pages/Dashboard/MiniGame/MiniGamePage'));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAuthStore((state) => state.username);
@@ -180,6 +181,16 @@ function App() {
           <Route path="mypage" element={<MyPage />} />
           <Route path="admin/signup-requests" element={<AdminRoute><SignupRequests /></AdminRoute>} />
           <Route path="admin/audit-logs" element={<AdminRoute><AuditLogs /></AdminRoute>} />
+          <Route
+            path="admin/mini-game"
+            element={
+              <AdminRoute>
+                <Suspense fallback={<div role="status" style={{ padding: '2rem', textAlign: 'center' }}>미니 게임을 불러오고 있습니다.</div>}>
+                  <MiniGamePage />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
           <Route path="notes/research" element={<AdminRoute><WeeklyNotes /></AdminRoute>} />
           
         </Route>
