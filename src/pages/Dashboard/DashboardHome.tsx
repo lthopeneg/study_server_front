@@ -14,7 +14,7 @@ const adminMenus = [
   { id: 'notes', title: '📝 연구 노트 (Notes)', desc: '생성형 AI 시큐어코딩 출제 실험 및 실행 결과를 확인합니다.', color: '#ef4444', path: '/notes/research' },
   { id: 'signup-requests', title: '✅ 회원가입 승인', desc: '대기 중인 회원가입 신청을 확인하고 승인합니다.', color: '#0f766e', path: '/admin/signup-requests' },
   { id: 'audit-logs', title: '🛡️ 보안 감사 로그', desc: '관리자와 계정 보안 관련 주요 작업 이력을 확인합니다.', color: '#4338ca', path: '/admin/audit-logs' },
-  { id: 'mini-game', title: '🎮 미니 게임', desc: 'Rogue Path Defense를 플레이하고 게임 밸런스를 점검합니다.', color: '#0891b2', path: '/admin/mini-game' },
+  { id: 'mini-game', title: '🎮 미니 게임', desc: 'Rogue Path Defense를 플레이하고 게임 밸런스를 점검합니다.', color: '#0891b2', path: '/mini-game/' },
 ];
 
 type DashboardMenu = (typeof commonMenus)[number];
@@ -43,7 +43,13 @@ const DashboardHome = () => {
         <button
           className="dashboard-home__card"
           key={menu.id}
-          onClick={() => navigate(menu.path)}
+          onClick={() => {
+            if (menu.id === 'mini-game') {
+              window.location.assign(menu.path);
+              return;
+            }
+            navigate(menu.path);
+          }}
           style={{ borderTopColor: menu.color }}
           type="button"
         >
