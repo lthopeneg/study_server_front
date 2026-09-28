@@ -1,10 +1,15 @@
-import RogueTdPage from './RogueTdPage';
-import './rogueTd.css';
+import { useEffect } from 'react';
 
-const MiniGamePage = () => (
-  <div className="mini-game-shell">
-    <RogueTdPage />
-  </div>
-);
+const MiniGamePage = () => {
+  useEffect(() => {
+    window.location.replace('/mini-game/');
+  }, []);
+
+  return (
+    <div role="status" style={{ padding: '2rem', textAlign: 'center' }}>
+      최신 미니 게임을 불러오고 있습니다.
+    </div>
+  );
+};
 
 export default MiniGamePage;
