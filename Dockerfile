@@ -17,8 +17,9 @@ FROM nginx:alpine
 
 ARG APP_REVISION=unknown
 
-# 기존의 기본 Nginx 설정 파일 삭제
-RUN rm /etc/nginx/conf.d/default.conf
+# 베이스 이미지가 만들어진 뒤 공개된 보안 수정 패키지를 반영하고 기본 설정을 제거합니다.
+RUN apk upgrade --no-cache \
+    && rm /etc/nginx/conf.d/default.conf
 
 # 우리가 만든 커스텀 Nginx 설정 파일 복사
 COPY nginx.conf /etc/nginx/conf.d
