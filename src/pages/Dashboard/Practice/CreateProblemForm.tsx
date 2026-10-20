@@ -366,16 +366,16 @@ const AiCreationFields = ({ language, majorTopic, minorTopic, difficulty }: {
                 <input
                     type="number"
                     min="1"
-                    max="20"
+                    max="5"
                     value={minimumFiles}
                     onChange={(event) => {
                         const nextValue = Number(event.target.value);
                         if (Number.isInteger(nextValue)) setMinimumFiles(nextValue);
                     }}
-                    onBlur={() => setMinimumFiles((current) => Math.min(20, Math.max(1, current)))}
+                    onBlur={() => setMinimumFiles((current) => Math.min(5, Math.max(1, current)))}
                 />
                 <small>
-                    1유형과 2유형에 각각 최소 {minimumFiles}개 파일을 생성합니다.
+                    1유형과 2유형에 각각 {minimumFiles}~5개의 문제 파일을 생성합니다. Python의 requirements.txt와 C# 프로젝트 지원 파일은 제외합니다.
                 </small>
             </label>
             <label>
